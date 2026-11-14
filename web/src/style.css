@@ -605,3 +605,4 @@ a.boss[href]:hover .boss-nameimg, a.boss[href]:hover .collect-name { filter: dro
 .kpi .kpi-sub a { color: var(--title-red); }
 .cmp-table td.cmp-better { color: #4b8f2a; font-weight: 700; }
 .cmp-table td.cmp-better::after { content: " ▲"; font-size: 0.7em; }
+.error-text { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--paper-light); background: rgb(0 0 0 / 0.4); padding: 0.6rem; }

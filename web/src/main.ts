@@ -13,13 +13,7 @@ import { allowFolder, connectedFolder, folderReady, folderSupported, forgetFolde
 import { defaultStatsOptions, renderStats } from "./views/stats";
 import { renderRuns } from "./views/runs";
 import { renderRun } from "./views/run";
-import { renderAchievements } from "./views/achievements";
-import { renderBestiary } from "./views/bestiary";
-import { renderBosses } from "./views/bosses";
-import { renderChallenges } from "./views/challenges";
-import { renderCompare } from "./views/compare";
 import { renderCharacter } from "./views/character";
-import { renderItems } from "./views/items";
 import { renderLifetime } from "./views/lifetime";
 
 const state = {
@@ -224,7 +218,36 @@ function setActiveNav(name: string): void {
   }
 }
 
+// Pages with big lists from the game (achievements, bestiary...) load when first opened; the page
+// shown meanwhile says so, and a later navigation wins over a slow load.
+let renderSeq = 0;
+function lazyPage(load: () => Promise<HTMLElement>): void {
+  const seq = ++renderSeq;
+  clear(main, h("div", { class: "page" }, h("p", { class: "muted" }, "Loading…")));
+  window.scrollTo(0, 0);
+  load().then((el) => { if (seq === renderSeq) clear(main, el); })
+    .catch((e: Error) => { if (seq === renderSeq) showError(e); });
+}
+
+function showError(e: unknown): void {
+  console.error(e);
+  clear(main, h("div", { class: "page" },
+    h("h1", null, "Something broke"),
+    h("p", { class: "page-note" }, "This page hit an error. Reloading usually helps; your runs are safe in the browser."),
+    h("pre", { class: "error-text" }, String((e as Error)?.message ?? e)),
+    h("p", null, h("a", { href: "#/stats" }, "← Statistics"))));
+}
+
 function render(): void {
+  try {
+    renderPage();
+  } catch (e) {
+    showError(e);
+  }
+}
+
+function renderPage(): void {
+  renderSeq++;
   runCount.textContent = state.runs.length ? `${state.runs.length} run${state.runs.length === 1 ? "" : "s"}` : "";
   const hasData = state.runs.length > 0 || state.lifetimes.length > 0;
   document.body.classList.toggle("no-data", !hasData);
@@ -250,27 +273,22 @@ function render(): void {
       window.scrollTo(0, 0);
       break;
     case "achievements":
-      clear(main, renderAchievements(state.lifetimes, state.lifetimeSlot));
-      window.scrollTo(0, 0);
+      lazyPage(async () => (await import("./views/achievements")).renderAchievements(state.lifetimes, state.lifetimeSlot));
       break;
     case "items":
-      clear(main, renderItems(state.lifetimes, state.lifetimeSlot, state.runs, state.statsOptions.countQuits));
-      window.scrollTo(0, 0);
+      lazyPage(async () => (await import("./views/items")).renderItems(state.lifetimes, state.lifetimeSlot, state.runs, state.statsOptions.countQuits));
       break;
     case "compare":
-      clear(main, renderCompare(state.runs, state.lifetimes, state.lifetimeSlot, state.statsOptions.countQuits, render));
+      lazyPage(async () => (await import("./views/compare")).renderCompare(state.runs, state.lifetimes, state.lifetimeSlot, state.statsOptions.countQuits, render));
       break;
     case "challenges":
-      clear(main, renderChallenges(state.lifetimes, state.lifetimeSlot, state.runs));
-      window.scrollTo(0, 0);
+      lazyPage(async () => (await import("./views/challenges")).renderChallenges(state.lifetimes, state.lifetimeSlot, state.runs));
       break;
     case "bosses":
-      clear(main, renderBosses(state.runs, state.statsOptions.countQuits));
-      window.scrollTo(0, 0);
+      lazyPage(async () => (await import("./views/bosses")).renderBosses(state.runs, state.statsOptions.countQuits));
       break;
     case "bestiary":
-      clear(main, renderBestiary(state.lifetimes, state.lifetimeSlot));
-      window.scrollTo(0, 0);
+      lazyPage(async () => (await import("./views/bestiary")).renderBestiary(state.lifetimes, state.lifetimeSlot));
       break;
     case "run":
       clear(main, renderRun(state.runs.find((r) => r.id === route.id), async (run) => {

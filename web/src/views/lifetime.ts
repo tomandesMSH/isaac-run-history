@@ -2,8 +2,7 @@
 // counters). They cover the whole save file, not only the runs the mod recorded.
 
 import { itemInfo, uiIcon } from "../data/items";
-import { achievementCount } from "./achievements";
-import { challengeCount } from "./challenges";
+import { achievementCount, challengeCount } from "../data/counts";
 import { marksView } from "./marks";
 import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
 import { dateTime, percent } from "../format";

@@ -33,14 +33,6 @@ function achievement(e: Entry): HTMLElement {
     e.how ? h("div", { class: "ach-how" }, e.how) : null);
 }
 
-/** How many achievements a lifetime export has unlocked, or undefined before mod 1.2. */
-export function achievementCount(l: Lifetime): { unlocked: number; total: number } | undefined {
-  if (!l.achievements) return undefined;
-  const ids = new Set(l.achievements);
-  const all = achievementData as Known[];
-  return { unlocked: all.filter((a) => ids.has(a.id)).length, total: all.length };
-}
-
 export function renderAchievements(lifetimes: Lifetime[], slot: string | undefined): HTMLElement {
   const l = [...lifetimes].sort((a, b) => a.slot.localeCompare(b.slot)).find((x) => x.slot === slot) ?? lifetimes[0];
   const ids = l?.achievements ? new Set(l.achievements) : undefined;

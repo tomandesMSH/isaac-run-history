@@ -6,8 +6,7 @@ import { duration, percent } from "../format";
 import { parseExport, type Lifetime, type Run } from "../model/schema";
 import { deleteFriend, loadFriends, saveFriend, type Friend } from "../storage/db";
 import { applyFilters, records, summary, winRateByCharacter, type RunRecord, type StatsOptions } from "../stats/stats";
-import { achievementCount } from "./achievements";
-import { challengeCount } from "./challenges";
+import { achievementCount, challengeCount } from "../data/counts";
 
 let selected: string | undefined;
 

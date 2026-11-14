@@ -782,6 +782,23 @@ def write_challenges_web(res: Path) -> int:
     return len(entries)
 
 
+# What the always-loaded pages need from the big lists, so those load only with their own page:
+# which achievement and challenge ids exist (Lifetime's counts) and each item's quality (Statistics).
+META_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "meta.json"
+
+
+def write_meta_web() -> None:
+    achievements = json.loads(ACHIEVEMENTS_JSON.read_text(encoding="utf-8"))
+    challenges = json.loads(CHALLENGES_JSON.read_text(encoding="utf-8"))
+    items = json.loads(ITEMS_JSON.read_text(encoding="utf-8"))["items"]
+    meta = {
+        "achievements": [a["id"] for a in achievements],
+        "challenges": [c["id"] for c in challenges if c["name"]],
+        "quality": {str(i["id"]): i["quality"] for i in items if "quality" in i},
+    }
+    META_JSON.write_text(json.dumps(meta, separators=(",", ":")) + "\n", encoding="utf-8")
+
+
 # The page's bestiary: the full list (bundled into the page, so names work without graphics) and
 # the death screen's ink portraits, 64x48 cells: enemies 16 per row, bosses 7 per row.
 BESTIARY_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "bestiary.json"
@@ -924,6 +941,7 @@ def main() -> None:
     print(f"achievements for the page: {write_achievements_web(res)}")
     print(f"bosses for the page: {write_bosses_web(res)}")
     print(f"challenges for the page: {write_challenges_web(res)}")
+    write_meta_web()
 
     (OUT / "manifest.json").write_text(json.dumps({
         "version": 2,

@@ -3,7 +3,7 @@
 // Win rate = wins / decided runs. A run is decided when it was won or lost (died); quits and runs
 // cut short by a crash don't count unless countQuits is on, then they count as losses.
 
-import collectionData from "../data/collection.json";
+import { itemQuality } from "../data/counts";
 import { BOSSES, ROOM_TYPES, curseNames, endingName, floorName, floorOrder } from "../data/game";
 
 const BOSS_IDS = Object.keys(BOSSES).map(Number);
@@ -278,7 +278,6 @@ export function itemPairs(runs: Run[], countQuits: boolean, minRuns: number, lim
     .slice(0, limit);
 }
 
-const QUALITY = new Map((collectionData.items as { id: number; quality?: number }[]).map((i) => [i.id, i.quality]));
 const DEVIL_ROOMS = new Set([14, 22]); // devil room, black market
 const ANGEL_ROOMS = new Set([15]);
 
@@ -330,7 +329,7 @@ export function qualityByFloor(runs: Run[]): FloorQuality[] {
       const label = floorName(f.stage, f.stageType, isGreed(r));
       const g = groups.get(label) ?? { label, order: floorOrder(f.stage, f.stageType) + (isGreed(r) ? 1000 : 0), items: 0, quality: 0, sum: 0, rated: 0 };
       g.items++;
-      const q = QUALITY.get(i.id);
+      const q = itemQuality(i.id);
       if (q !== undefined) { g.sum += q; g.rated++; }
       groups.set(label, g);
     }

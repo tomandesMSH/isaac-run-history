@@ -38,13 +38,6 @@ function goal(c: Known): string {
   }
 }
 
-export function challengeCount(l: Lifetime): { done: number; total: number } | undefined {
-  if (!l.challenges) return undefined;
-  const ids = new Set(l.challenges);
-  const all = known();
-  return { done: all.filter((c) => ids.has(c.id)).length, total: all.length };
-}
-
 // challenge 45 is an unnamed leftover ("DELETE THIS") the game doesn't list
 function known(): Known[] {
   return (challengeData as Known[]).filter((c) => c.name);
