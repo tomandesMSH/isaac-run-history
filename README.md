@@ -29,8 +29,9 @@ The project has two parts:
 Every export also carries **lifetime totals from the game's own save** (`persistentgamedata`),
 covering every run you ever played, from before the mod too: completion marks per character, the
 bestiary (what killed you how often, what you killed most), your item collection and what's still
-missing, and the game's counters (deaths, final bosses beaten, best streak, Eden tokens, pills
-eaten, ...). The save keeps totals only, no list of runs, so per-run stats still come from the mod.
+missing, the unlocked achievements (mod 1.2+), the finished challenges (mod 1.3+) and the game's
+counters (deaths, final bosses beaten, best streak, Eden tokens, pills eaten, ...). The save keeps
+totals only, no list of runs, so per-run stats still come from the mod.
 
 ## Installing
 
@@ -63,14 +64,27 @@ Drag `save1.dat` (or a pasted `rh export`) onto the page. Runs are kept in the b
 (IndexedDB) and merged by run id, so importing the same file again only adds the new runs; files
 from different save slots add up.
 
-- **Statistics:** win rate per character, endings, most picked items, items with the best win rate
-  (with a minimum number of runs, so one lucky run doesn't top the list), causes of death, floor of
-  death, average run length. Filter by difficulty; quits can count as losses.
-- **Runs:** every run, filtered by character, result, difficulty or item.
-- **Lifetime:** the totals from the game's save (completion marks table, deadliest enemies, final
-  bosses, collection with the missing items, every counter).
-- **Run detail:** floor-by-floor timeline of items, trinkets and bosses, final stats, seed and
-  ShareSeed code.
+- **Statistics:** win rate per character, personal records, runs over time, endings, most picked
+  items and trinkets, the ones with the best win rate (with a minimum number of runs, so one lucky
+  run doesn't top the list), winning item pairs, where items come from (treasure, shop, devil...),
+  devil vs. angel deals, item quality by floor, alt path and curses, bosses beaten, causes and
+  floor of death. Filter by difficulty; quits can count as losses.
+- **Runs:** every run, filtered by character, result, difficulty, boss, challenge or item / trinket
+  (`Brimstone + Tammy's Head` finds runs with both).
+- **Run detail:** floor-by-floor timeline of items, trinkets and bosses, final stats, seed,
+  ShareSeed code and a share image.
+- **Characters:** one page per character with their runs, records, items and completion marks.
+- **Bosses:** every boss with the versus screen portrait: how often you beat it, where, and how
+  often it killed you.
+- **Lifetime:** the totals from the game's save: completion marks drawn like the pause menu's,
+  counters, and pages for the **bestiary**, the **item collection**, **achievements** and
+  **challenges** (rules, unlocks, finished or not).
+- **Compare:** add a friend's `save1.dat` and see your numbers side by side. Their runs are kept
+  apart and never count in your statistics.
+
+In Chrome or Edge you can **connect the history folder** once (top bar): the page then reads the
+newest runs by itself on every visit and whenever you switch back to its tab. (Brave has this off
+by default: `brave://flags/#file-system-access-api`.)
 
 Win rate is wins / (wins + deaths): restarts and runs cut short by a crash aren't counted unless
 "Count quits as losses" is on.
@@ -90,7 +104,8 @@ relative paths, so the contents of `web/dist` also work from any other host or s
 
 ### Game graphics
 
-The room, paper, fonts and item icons in `web/public/gfx/` come from the game. They were taken
+The room, paper, fonts, item icons, bestiary drawings, boss portraits and achievement pictures in
+`web/public/gfx/` (and the lists in `web/src/data/`) come from the game. They were taken
 from the game's unpacked resources with `tools/extract_assets.py` (which also turns the game's
 bitmap fonts into TrueType); run it again only to refresh them after a game update:
 
