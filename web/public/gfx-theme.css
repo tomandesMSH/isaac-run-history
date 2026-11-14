@@ -297,3 +297,6 @@
 .has-gfx .dialog textarea { font-size: 0.9rem; }
 .has-gfx .stat-tile-value { font-family: var(--block); font-weight: 400; font-size: calc(var(--up) * 2); }
 .has-gfx .stat-tile-label { font-size: var(--tm); }
+.has-gfx .chart-title { font-size: var(--up); }
+.has-gfx .chart-title .muted { font-family: var(--pixel); font-size: var(--tm); text-transform: none; }
+.has-gfx .chart-legend { font-size: var(--tm); }

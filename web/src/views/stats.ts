@@ -1,6 +1,7 @@
 // Statistics page.
 
 import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
+import { overTime } from "./charts";
 import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
@@ -117,6 +118,7 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       h("a", { href: "#/lifetime" }, "Lifetime"), "."),
     kpis,
     card("Personal records", recordTiles(records(runs, opts.countQuits)), { wide: true }),
+    card("Over time", overTime(runs, opts.countQuits), { wide: true, note: "Hover a bar, point or day for the numbers." }),
     h("div", { class: "grid" },
       card("Win rate by character", charTable),
       card("Endings", countList(endings(runs), "win", "No wins yet.", () => runsLink({ result: "win" }))),
