@@ -13,7 +13,7 @@ import {
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
 
 // value: text as is, or a number that counts up shown through fmt
-function kpi(label: string, value: string | [number, (n: number) => string], sub?: string): HTMLElement {
+export function kpi(label: string, value: string | [number, (n: number) => string], sub?: string): HTMLElement {
   const text = typeof value === "string" ? value : value[1](value[0]);
   const v = h("div", { class: text.length >= 6 ? "kpi-value long" : "kpi-value" });
   if (typeof value === "string") v.textContent = value;
@@ -24,7 +24,7 @@ function kpi(label: string, value: string | [number, (n: number) => string], sub
     sub ? h("div", { class: "kpi-sub" }, sub) : null);
 }
 
-function countList(groups: CountGroup[], kind: "death" | "neutral" | "win", empty: string, link?: (g: CountGroup) => string): HTMLElement {
+export function countList(groups: CountGroup[], kind: "death" | "neutral" | "win", empty: string, link?: (g: CountGroup) => string): HTMLElement {
   if (groups.length === 0) return emptyNote(empty);
   const max = Math.max(...groups.map((g) => g.count));
   const total = groups.reduce((a, g) => a + g.count, 0);
@@ -36,7 +36,7 @@ function countList(groups: CountGroup[], kind: "death" | "neutral" | "win", empt
         h("td", { class: "bar-cell" }, bar(g.count / max, percent(g.count / total), kind))))));
 }
 
-function itemTable(groups: ItemGroup[], mode: "count" | "winrate", baseline: number): HTMLElement {
+export function itemTable(groups: ItemGroup[], mode: "count" | "winrate", baseline: number): HTMLElement {
   return h("table", { class: "table" },
     h("thead", null, h("tr", null,
       h("th", { scope: "col" }, "Item"),
@@ -60,7 +60,7 @@ function recordValue(r: RunRecord): string {
 }
 
 // each record is a tile: the value, what it is, and a link to the run that set it
-function recordTiles(list: RunRecord[]): HTMLElement {
+export function recordTiles(list: RunRecord[]): HTMLElement {
   if (list.length === 0) return emptyNote("No runs yet.");
   return h("div", { class: "stat-tiles compact records" }, list.map((r) => h("div", { class: "stat-tile" },
     h("div", null,
@@ -100,7 +100,7 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       h("th", { scope: "col", class: "num" }, "Won"),
       h("th", { scope: "col" }, "Win rate"))),
     h("tbody", null, chars.map((g) => h("tr", null,
-      h("th", { scope: "row" }, h("a", { href: runsLink({ char: g.key }) }, g.label)),
+      h("th", { scope: "row" }, h("a", { href: `#/character/${encodeURIComponent(g.key)}` }, g.label)),
       h("td", { class: "num" }, g.runs),
       h("td", { class: "num" }, `${g.wins}/${g.decided}`),
       h("td", { class: "bar-cell" }, bar(g.winRate, g.decided ? percent(g.winRate) : "–", "win"))))));
