@@ -619,6 +619,76 @@ NOT_COUNTED = {
 }
 
 
+# Floors in the order a run meets them; an enemy's floor is the first one whose rooms have it.
+# (room file stem in rooms/, name). Enemies only in shared rooms (devil, angel, secret...) get
+# "Special rooms"; ones no room places (spawned by others) get none.
+ROOM_FLOORS = [
+    ("basement", "Basement"), ("cellar", "Cellar"), ("burning basement", "Burning Basement"),
+    ("downpour", "Downpour"), ("dross", "Dross"),
+    ("caves", "Caves"), ("catacombs", "Catacombs"), ("flooded caves", "Flooded Caves"),
+    ("mines", "Mines"), ("ashpit", "Ashpit"),
+    ("depths", "Depths"), ("necropolis", "Necropolis"), ("dank depths", "Dank Depths"),
+    ("mausoleum", "Mausoleum"), ("gehenna", "Gehenna"),
+    ("womb", "Womb"), ("utero", "Utero"), ("scarred womb", "Scarred Womb"), ("corpse", "Corpse"),
+    ("blue womb", "???"), ("sheol", "Sheol"), ("cathedral", "Cathedral"), ("dark room", "Dark Room"),
+    ("chest", "The Chest"), ("the void", "The Void"), ("home", "Home"),
+    ("greed basement", "Greed: Basement"), ("greed caves", "Greed: Caves"), ("greed depths", "Greed: Depths"),
+    ("greed womb", "Greed: Womb"), ("greed sheol", "Greed: Sheol"), ("ultra greed", "Greed: Ultra Greed"),
+    ("special rooms", "Special rooms"),
+]
+
+
+# The story bosses' rooms are in the shared room file, and a few bosses' normal rooms only show up
+# in Greed mode's, so these take the floor a run meets them on.
+STORY_FLOORS = {
+    "Mom": "Depths", "Mom's Heart": "Womb", "It Lives": "Womb", "Scolex": "Womb", "Mr. Fred": "Womb",
+    "Hush": "???", "Hush (Skinless)": "???", "Satan": "Sheol", "Isaac": "Cathedral", "???": "The Chest",
+    "The Lamb": "Dark Room", "Mega Satan": "Dark Room", "Mega Satan's Right Hand": "Dark Room",
+    "Mega Satan's Left Hand": "Dark Room", "Mega Satan 2": "Dark Room", "Delirium": "The Void",
+}
+
+
+def read_stb(path: Path) -> list[tuple[int, int]]:
+    """(type, variant) of every entity placed in a room file (STB1: Repentance's binary rooms)."""
+    b = path.read_bytes()
+    if b[:4] != b"STB1":
+        return []
+    o = 4
+
+    def r(fmt: str) -> tuple:
+        nonlocal o
+        v = struct.unpack_from("<" + fmt, b, o)
+        o += struct.calcsize("<" + fmt)
+        return v
+
+    (rooms,) = r("I")
+    out = []
+    for _ in range(rooms):
+        r("IIIB")                          # type, variant, subtype, difficulty
+        (name_len,) = r("H")
+        o += name_len
+        r("fBBB")                          # weight, width, height, shape
+        doors, spawns = r("BH")
+        o += doors * 5                     # x, y (int16), exists (byte)
+        for _ in range(spawns):
+            _, _, stacked = r("hhB")
+            for _ in range(stacked):
+                t, v, _, _ = r("HHHf")
+                out.append((t, v))
+    return out
+
+
+def first_floors(res: Path) -> dict[tuple[int, int], int]:
+    """(type, variant) -> index in ROOM_FLOORS of the first floor whose rooms place it."""
+    files = {p.stem.split(".", 1)[1]: p for p in (res / "rooms").glob("*.stb") if "." in p.stem}
+    first: dict[tuple[int, int], int] = {}
+    for i, (stem, _) in enumerate(ROOM_FLOORS):
+        if stem in files:
+            for key in read_stb(files[stem]):
+                first.setdefault(key, i)
+    return first
+
+
 def write_bestiary_web(res: Path) -> int:
     entries = [e for e in bestiary_entries(res) if (e["type"], e["variant"]) not in NOT_COUNTED]
     ui = res / "gfx" / "ui"
@@ -629,13 +699,20 @@ def write_bestiary_web(res: Path) -> int:
         img = Image.open(ui / sheet).convert("RGBA")
         img.save(out / f"{kind}.png")
         frames[kind] = (cols, (img.width // 64) * (img.height // 48))
+    floors = first_floors(res)
     for e in entries:
+        f = floors.get((e["type"], e["variant"]))
+        if e["name"] in STORY_FLOORS:
+            f = [name for _, name in ROOM_FLOORS].index(STORY_FLOORS[e["name"]])
+        if f is not None:
+            e["floor"] = f
         kind = "boss" if e.get("boss") else "enemy"
         cols, count = frames[kind]
         p = e.pop("portrait", None)
         if p is not None and 0 <= p < count:
             e["sheet"], e["x"], e["y"] = kind, (p % cols) * 64, (p // cols) * 48
-    BESTIARY_JSON.write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    data = {"floors": [name for _, name in ROOM_FLOORS], "entities": entries}
+    BESTIARY_JSON.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     return len(entries)
 
 

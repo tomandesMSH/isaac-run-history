@@ -2,11 +2,19 @@
 // screen's ink portrait. The full list comes from the game files (tools/extract_assets.py writes
 // data/bestiary.json); the counts come from the lifetime export, which only lists what you've met.
 
-import bestiaryList from "../data/bestiary.json";
+import bestiaryData from "../data/bestiary.json";
 import { card, emptyNote, h } from "../dom";
 import type { Lifetime } from "../model/schema";
 
-interface Known { type: number; variant: number; name: string; boss?: boolean; sheet?: "enemy" | "boss"; x?: number; y?: number }
+interface Known {
+  type: number; variant: number; name: string; boss?: boolean;
+  sheet?: "enemy" | "boss"; x?: number; y?: number;
+  /** index into FLOORS: the first floor whose rooms place it */
+  floor?: number;
+}
+
+const FLOORS: string[] = bestiaryData.floors;
+const NO_FLOOR = "Spawned by others";
 
 interface Entry extends Known {
   order: number;
@@ -16,11 +24,11 @@ interface Entry extends Known {
   encounters: number;
 }
 
-type Sort = "game" | "name" | "kills" | "deaths" | "encounters";
+type Sort = "game" | "floor" | "name" | "kills" | "deaths" | "encounters";
 type Show = "all" | "met" | "unmet";
 
 const SORTS: [Sort, string][] = [
-  ["game", "Game order"], ["name", "Name (A–Z)"], ["kills", "Most killed"], ["deaths", "Killed you most"], ["encounters", "Most met"],
+  ["game", "Game order"], ["floor", "Floor"], ["name", "Name (A–Z)"], ["kills", "Most killed"], ["deaths", "Killed you most"], ["encounters", "Most met"],
 ];
 const SHOWS: [Show, string][] = [["all", "All"], ["met", "Met"], ["unmet", "Not met yet"]];
 
@@ -29,7 +37,7 @@ const view: { sort: Sort; show: Show; query: string } = { sort: "game", show: "a
 
 function entries(l: Lifetime): Entry[] {
   const counts = new Map(l.bestiary.map((e) => [`${e.type}.${e.variant}`, e]));
-  const list: Entry[] = (bestiaryList as Known[]).map((k, order) => {
+  const list: Entry[] = (bestiaryData.entities as Known[]).map((k, order) => {
     const c = counts.get(`${k.type}.${k.variant}`);
     counts.delete(`${k.type}.${k.variant}`);
     return { ...k, order, met: !!c, kills: c?.kills ?? 0, deaths: c?.deaths ?? 0, encounters: c?.encounters ?? 0 };
@@ -49,6 +57,7 @@ function entries(l: Lifetime): Entry[] {
 function sorted(list: Entry[]): Entry[] {
   const by: Record<Sort, (a: Entry, b: Entry) => number> = {
     game: (a, b) => a.order - b.order,
+    floor: (a, b) => (a.floor ?? 999) - (b.floor ?? 999) || a.order - b.order,
     name: (a, b) => a.name.localeCompare(b.name),
     kills: (a, b) => b.kills - a.kills || a.order - b.order,
     deaths: (a, b) => b.deaths - a.deaths || a.order - b.order,
@@ -97,7 +106,22 @@ export function renderBestiary(lifetimes: Lifetime[], slot: string | undefined):
   const draw = () => {
     const list = sorted(all);
     count.textContent = `${list.length} shown`;
-    grid.replaceChildren(...(list.length ? list.map(beast) : [emptyNote(view.show === "unmet" ? "You've met everything. Nothing left to meet." : "Nothing matches.")]));
+    if (list.length === 0) {
+      grid.replaceChildren(emptyNote(view.show === "unmet" ? "You've met everything. Nothing left to meet." : "Nothing matches."));
+      return;
+    }
+    // by floor: a heading before each floor's first enemy
+    const out: HTMLElement[] = [];
+    let floor: number | undefined | null = null;
+    for (const e of list) {
+      if (view.sort === "floor" && e.floor !== floor) {
+        floor = e.floor;
+        const n = list.filter((x) => x.floor === floor).length;
+        out.push(h("h3", { class: "beast-floor" }, floor === undefined ? NO_FLOOR : FLOORS[floor], h("span", { class: "muted" }, ` · ${n}`)));
+      }
+      out.push(beast(e));
+    }
+    grid.replaceChildren(...out);
   };
 
   const select = <T extends string>(label: string, options: [T, string][], value: T, set: (v: T) => void) =>
@@ -118,7 +142,7 @@ export function renderBestiary(lifetimes: Lifetime[], slot: string | undefined):
     back,
     h("div", { class: "page-head" }, h("h1", null, "Bestiary"),
       h("span", { class: "muted" }, `${met} of ${all.length} met${l.slot !== "?" ? ` · save slot ${l.slot}` : ""}`)),
-    h("p", { class: "page-note" }, "Game order is the order the game lists them in, roughly by chapter. ",
+    h("p", { class: "page-note" }, "Game order is the order the game lists them in. Floor is the first floor whose rooms have it. ",
       "The game doesn't remember when you first met something."),
     controls,
     h("section", { class: "card card-wide" }, grid));

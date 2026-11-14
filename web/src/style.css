@@ -512,3 +512,5 @@ i.heat-3 { background: var(--heat-3); } i.heat-4 { background: var(--heat-4); }
 .beast.unmet .beast-portrait { opacity: 0.22; }
 .beast.unmet .beast-name { color: var(--ink-muted); }
 .input-search { min-width: 10rem; }
+.beast-floor { grid-column: 1 / -1; margin: 0.8rem 0 -0.2rem; border-bottom: 2px solid var(--line); padding-bottom: 0.2rem; }
+.beast-floor:first-child { margin-top: 0; }

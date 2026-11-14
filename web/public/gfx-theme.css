@@ -302,3 +302,4 @@
 .has-gfx .chart-legend { font-size: var(--tm); }
 .has-gfx .beast-name { font-weight: 400; }
 .has-gfx .beast-counts { font-size: var(--tm); line-height: 0.9; }
+.has-gfx .beast-floor .muted { font-family: var(--pixel); font-size: var(--tm); }
