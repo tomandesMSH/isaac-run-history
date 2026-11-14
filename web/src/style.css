@@ -442,3 +442,7 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
 .mark-1 { border-color: var(--ink); color: var(--ink); background: var(--paper-light); }
 .mark-2 { border-color: var(--ink); color: #fff; background: var(--red); }
 .collection-missing .item { font-size: 0.85rem; }
+
+/* the start page: one sheet that fits the window, no scrolling */
+.no-data main { padding-top: 1rem; padding-bottom: 1rem; }
+.no-data .empty { margin-top: 0; gap: 0.7rem; }

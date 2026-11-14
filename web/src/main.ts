@@ -141,7 +141,7 @@ const HISTORY_FOLDER = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\The B
 
 function emptyState(): HTMLElement {
   return h("div", { class: "page empty" },
-    h("h1", null, "Your Isaac runs, in numbers"),
+    h("h1", null, "Count your sins."),
     h("p", { class: "lead" }, "Win rate per character, the items that win you runs, what keeps killing you and where."),
     h("div", { class: "path-row" },
       h("code", null, HISTORY_FOLDER),

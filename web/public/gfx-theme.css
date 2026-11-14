@@ -290,3 +290,5 @@
 .has-gfx .marks thead .mark-col { font-size: var(--tm); }
 .has-gfx .mark { font-family: var(--block); font-weight: 400; font-size: var(--up); }
 .has-gfx .collection-missing .item { font-size: var(--tm); }
+.has-gfx.no-data .empty { padding-top: 0; padding-bottom: 0; }
+.has-gfx.no-data .empty h1 { font-size: calc(var(--up) * 3); }
