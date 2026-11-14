@@ -33,8 +33,10 @@
       </nav>
       <div class="actions">
         <span id="run-count" class="muted small"></span>
-        <button id="btn-import" class="btn btn-primary" type="button">Import file</button>
-        <button id="btn-paste" class="btn" type="button">Paste</button>
+        <details class="menu import-menu" id="import-menu">
+          <summary class="btn btn-primary" id="btn-import">Import file</summary>
+          <div class="menu-list import-panel" id="import-panel"></div>
+        </details>
         <button id="btn-folder" class="btn" type="button" hidden>Connect folder</button>
         <details class="menu music-menu" id="music-menu" hidden>
           <summary class="btn btn-icon" aria-label="Music"></summary>

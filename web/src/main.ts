@@ -178,8 +178,33 @@ async function clearAll(): Promise<void> {
   render();
 }
 
-document.getElementById("btn-import")!.addEventListener("click", openFilePicker);
-document.getElementById("btn-paste")!.addEventListener("click", openPaste);
+// The mod's history folder on a default Steam install; pasted into the file picker it opens there.
+const HISTORY_FOLDER = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\The Binding of Isaac Rebirth\\data\\isaac-run-history";
+
+// Import menu in the top bar: a small version of the first page (drop zone, the folder's path,
+// paste), so updating the runs later is one click and a drag.
+const importMenu = document.getElementById("import-menu") as HTMLDetailsElement;
+const importButton = document.getElementById("btn-import")!;
+const closeImport = () => { importMenu.open = false; };
+document.getElementById("import-panel")!.append(
+  h("button", { class: "dropzone", type: "button", onClick: () => { closeImport(); openFilePicker(); } },
+    h("strong", null, "Drop your history file here"),
+    h("span", null, "save1.dat (or save2 / save3), or click to choose it")),
+  h("div", { class: "path-row" }, h("code", null, HISTORY_FOLDER), copyButton(HISTORY_FOLDER, "Copy path")),
+  h("p", { class: "import-more" }, "Or ",
+    h("button", { class: "link", type: "button", onClick: () => { closeImport(); openPaste(); } }, "paste rh export"),
+    folderSupported ? [" · ", h("button", { class: "link", type: "button", onClick: () => { closeImport(); void connectOrSync(); } }, "connect the folder")] : null));
+
+// open menus close on a click elsewhere, a dropped file or Escape
+document.addEventListener("click", (e) => {
+  for (const m of document.querySelectorAll<HTMLDetailsElement>("details.menu[open]")) {
+    if (!m.contains(e.target as Node)) m.open = false;
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") for (const m of document.querySelectorAll<HTMLDetailsElement>("details.menu[open]")) m.open = false;
+});
+window.addEventListener("drop", closeImport);
 document.getElementById("btn-download")!.addEventListener("click", downloadAll);
 document.getElementById("btn-clear")!.addEventListener("click", () => void clearAll());
 
@@ -187,8 +212,6 @@ document.getElementById("btn-clear")!.addEventListener("click", () => void clear
 // Pages
 // ------------------------------------------------------------------------------------------------
 
-// The mod's history folder on a default Steam install; pasted into the file picker it opens there.
-const HISTORY_FOLDER = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\The Binding of Isaac Rebirth\\data\\isaac-run-history";
 
 function emptyState(): HTMLElement {
   return h("div", { class: "page empty" },
@@ -239,6 +262,7 @@ function showError(e: unknown): void {
 }
 
 function render(): void {
+  importButton.textContent = state.runs.length || state.lifetimes.length ? "Update runs" : "Import file";
   try {
     renderPage();
   } catch (e) {
