@@ -458,6 +458,7 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
 /* ---------- lifetime: counter tiles ---------- */
 
 .stat-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.9rem 1.2rem; }
+.stat-tiles.compact { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem 1rem; }
 .stat-tile { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
 .stat-tile-icon { width: 44px; height: 44px; flex: none; image-rendering: pixelated; object-fit: none; }
 .stat-tile-value { font-family: var(--block); font-weight: 700; font-size: 1.3rem; line-height: 1.1; }

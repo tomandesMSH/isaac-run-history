@@ -131,10 +131,12 @@ function tileGroups(c: Record<string, number>): HTMLElement[] {
   return [...TILE_GROUPS, { title: "Other", tiles: other }, ITEM_GROUP].flatMap((g) => {
     const tiles = g.tiles.map((t) => ({ t, v: tileValue(t, c) })).filter(({ v }) => v > 0);
     if (tiles.length === 0) return [];
-    return [card(g.title, h("div", { class: "stat-tiles" }, tiles.map(({ t, v }) => {
+    // Other has no icons, so its tiles drop the icon slot and pack tighter (one row on a wide screen)
+    const compact = g.tiles === other;
+    return [card(g.title, h("div", { class: compact ? "stat-tiles compact" : "stat-tiles" }, tiles.map(({ t, v }) => {
       const icon = t.item !== undefined ? itemInfo(t.item).icon : uiIcon(t.icon);
       return h("div", { class: "stat-tile" },
-        icon ? h("img", { class: "stat-tile-icon", src: icon, alt: "" }) : h("span", { class: "stat-tile-icon" }),
+        icon ? h("img", { class: "stat-tile-icon", src: icon, alt: "" }) : compact ? null : h("span", { class: "stat-tile-icon" }),
         h("div", null, h("div", { class: "stat-tile-value" }, num(v)), h("div", { class: "stat-tile-label" }, t.label)));
     })), { wide: true })];
   });
