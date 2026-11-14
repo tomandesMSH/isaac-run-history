@@ -583,10 +583,12 @@ def bestiary_entries(res: Path) -> list[dict]:
     return sorted(seen.values(), key=lambda e: (e["type"], e["variant"]))
 
 
-def english_entity_names(res: Path) -> dict[str, str]:
-    """stringtable.sta, category Entities: key -> English (the first <string> after the key)."""
+def english_entity_names(res: Path, category: str = "Entities") -> dict[str, str]:
+    """stringtable.sta, one category: key -> English (the first <string> after the key)."""
     sta = (res / "stringtable.sta").read_text(encoding="utf-8", errors="replace")
-    cat = re.search(r'<category name="Entities">(.*?)</category>', sta, re.S)
+    cat = re.search(rf'<category name="{category}">(.*?)</category>', sta, re.S) if category else None
+    if not category:
+        cat = re.search(r"(.*)", sta, re.S)  # every category
     out = {}
     for key, body in re.findall(r'<key name="([^"]+)">(.*?)</key>', cat.group(1) if cat else "", re.S):
         m = re.search(r"<string>(.*?)</string>", body, re.S)
@@ -603,6 +605,49 @@ def write_bestiary_ids(res: Path) -> int:
         "-- (type, variant) the bestiary can have counts for.\n"
         f"return {{\n{rows},\n}}\n", encoding="utf-8")
     return len(entries)
+
+
+# The page's item collection: every item a save can collect (not hidden), with its quality and the
+# pools it drops from. Icons are the gfx/items/<id>.png the page already has.
+ITEMS_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "collection.json"
+POOL_NAMES = {
+    "treasure": "Treasure", "shop": "Shop", "boss": "Boss", "devil": "Devil", "angel": "Angel",
+    "secret": "Secret", "ultraSecret": "Ultra secret", "library": "Library", "curse": "Curse",
+    "planetarium": "Planetarium", "shellGame": "Shell game", "craneGame": "Crane game",
+    "goldenChest": "Golden chest", "redChest": "Red chest", "momsChest": "Mom's chest",
+    "oldChest": "Old chest", "woodenChest": "Wooden chest", "beggar": "Beggar",
+    "demonBeggar": "Devil beggar", "keyMaster": "Key master", "batteryBum": "Battery bum",
+    "bombBum": "Bomb bum", "rottenBeggar": "Rotten beggar", "babyShop": "Baby shop",
+}
+
+
+def write_items_web(res: Path) -> int:
+    names = {**english_entity_names(res, None), **english_entity_names(res, "Items")}
+    xml = (res / "items.xml").read_text(encoding="utf-8", errors="replace")
+    quality = {int(i): int(q) for i, q in re.findall(r'<item id="(\d+)" quality="(\d+)"', (res / "items_metadata.xml").read_text(encoding="utf-8"))}
+    pools: dict[int, list[str]] = {}
+    for pool, body in re.findall(r'<Pool Name="([^"]+)">(.*?)</Pool>', (res / "itempools.xml").read_text(encoding="utf-8"), re.S):
+        if pool in POOL_NAMES:
+            for i in re.findall(r'<Item Id="(\d+)"', body):
+                pools.setdefault(int(i), []).append(POOL_NAMES[pool])
+    items = []
+    for kind, attrs in re.findall(r"<(passive|active|familiar)\s([^>]*)>", xml):
+        a = dict(re.findall(r'(\w+)="([^"]*)"', attrs))
+        if "id" not in a or a.get("hidden") == "true":
+            continue
+        i = int(a["id"])
+        name = html.unescape(a.get("name", ""))
+        name = names.get(name[1:], name) if name.startswith("#") else name
+        e = {"id": i, "name": name, "kind": kind}
+        if i in quality:
+            e["quality"] = quality[i]
+        if i in pools:
+            e["pools"] = sorted(set(pools[i]), key=list(POOL_NAMES.values()).index)
+        items.append(e)
+    items.sort(key=lambda e: e["id"])
+    data = {"pools": list(POOL_NAMES.values()), "items": items}
+    ITEMS_JSON.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return len(items)
 
 
 # The page's bestiary: the full list (bundled into the page, so names work without graphics) and
@@ -743,6 +788,7 @@ def main() -> None:
     print(f"  {len(items)} items, {len(trinkets)} trinkets")
     print(f"bestiary ids for the mod: {write_bestiary_ids(res)}")
     print(f"bestiary for the page: {write_bestiary_web(res)}")
+    print(f"items for the page: {write_items_web(res)}")
 
     (OUT / "manifest.json").write_text(json.dumps({
         "version": 2,

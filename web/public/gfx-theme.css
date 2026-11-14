@@ -309,3 +309,5 @@
 .has-gfx .marks-note, .has-gfx .marks-note-mark {
   background-image: url("gfx/ui/completion.png"); background-size: calc(384px * var(--s)) auto; background-repeat: no-repeat;
 }
+.has-gfx .collect-name { font-weight: 400; }
+.has-gfx .collect-meta, .has-gfx .collect-missing { font-size: var(--tm); line-height: 0.9; }

@@ -11,6 +11,7 @@ export type Route =
   | { name: "stats" }
   | { name: "lifetime" }
   | { name: "bestiary" }
+  | { name: "items" }
   | { name: "character"; key: string }
   | { name: "runs"; filters: RunFilters }
   | { name: "run"; id: string };
@@ -23,6 +24,7 @@ export function parseRoute(hash: string): Route {
   if (parts[0] === "run" && parts[1]) return { name: "run", id: decodeURIComponent(parts[1]) };
   if (parts[0] === "lifetime") return { name: "lifetime" };
   if (parts[0] === "bestiary") return { name: "bestiary" };
+  if (parts[0] === "items") return { name: "items" };
   if (parts[0] === "character" && parts[1]) return { name: "character", key: decodeURIComponent(parts[1]) };
   if (parts[0] === "runs") {
     const q = new URLSearchParams(query);

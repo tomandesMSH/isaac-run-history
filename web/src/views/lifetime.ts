@@ -186,7 +186,7 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
     kpi("Deaths", c.DEATHS ?? 0, `${num(totalBestiaryDeaths)} of them to enemies`),
     kpi("Best streak", c.BEST_STREAK ?? 0, `current: ${num(c.STREAK_COUNTER)}${c.NEGATIVE_STREAK_COUNTER ? `, losing: ${num(c.NEGATIVE_STREAK_COUNTER)}` : ""}`),
     kpi("Enemies killed", totalKills, h("a", { href: "#/bestiary", title: "Open the bestiary" }, `${l.bestiary.length} kinds met →`)),
-    kpi("Items collected", col.total ? col.have.length : "–", col.total ? `of ${num(col.total)} · ${percent(col.have.length / col.total)}` : undefined),
+    kpi("Items collected", col.total ? col.have.length : "–", col.total ? h("a", { href: "#/items", title: "Open the item collection" }, `of ${num(col.total)} · ${percent(col.have.length / col.total)} →`) : undefined),
     kpi("Eden tokens", c.EDEN_TOKENS ?? 0));
 
   const deadliest = [...l.bestiary].filter((e) => e.deaths > 0).sort((a, b) => b.deaths - a.deaths).slice(0, 15)
