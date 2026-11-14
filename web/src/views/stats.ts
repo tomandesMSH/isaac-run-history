@@ -13,7 +13,8 @@ export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits
 
 // value: text as is, or a number that counts up shown through fmt
 function kpi(label: string, value: string | [number, (n: number) => string], sub?: string): HTMLElement {
-  const v = h("div", { class: "kpi-value" });
+  const text = typeof value === "string" ? value : value[1](value[0]);
+  const v = h("div", { class: text.length >= 6 ? "kpi-value long" : "kpi-value" });
   if (typeof value === "string") v.textContent = value;
   else countUp(v, value[0], value[1]);
   return h("div", { class: "kpi" },

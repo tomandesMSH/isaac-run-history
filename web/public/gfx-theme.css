@@ -95,6 +95,7 @@
 }
 .has-gfx .kpi-label { font-family: var(--pixel); font-size: var(--tm); text-transform: none; }
 .has-gfx .kpi-value { font-weight: 400; font-size: calc(var(--up) * 3); line-height: 1; margin: 0.15rem 0; }
+.has-gfx .kpi-value.long { font-size: calc(var(--up) * 2); }
 
 /* page titles on a torn strip */
 .has-gfx .page-head h1 {

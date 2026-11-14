@@ -235,6 +235,7 @@ label.check { cursor: pointer; }
 .kpi:nth-child(even) { transform: rotate(1deg); }
 .kpi-label { font-family: var(--block); font-size: 0.75rem; text-transform: uppercase; color: var(--ink-muted); }
 .kpi-value { font-family: var(--block); font-weight: 700; font-size: 2.2rem; line-height: 1.15; }
+.kpi-value.long { font-size: 1.6rem; }
 .kpi-sub { color: var(--ink-muted); font-size: 0.85rem; line-height: 1.2; }
 .kpi:nth-child(2) .kpi-value { color: var(--title-red); }
 

@@ -153,7 +153,8 @@ function num(n: number | undefined): string {
 }
 
 function kpi(title: string, value: string | number, sub?: string): HTMLElement {
-  const v = h("div", { class: "kpi-value" }, typeof value === "number" ? num(value) : value);
+  const text = typeof value === "number" ? num(value) : value;
+  const v = h("div", { class: text.length >= 6 ? "kpi-value long" : "kpi-value" }, text);
   if (typeof value === "number") countUp(v, value, (n) => num(Math.round(n)));
   return h("div", { class: "kpi" },
     h("div", { class: "kpi-label" }, title),
@@ -174,7 +175,8 @@ function marksTable(l: Lifetime): HTMLElement {
       MARK_COLUMNS.map((c) => h("th", { scope: "col", class: "mark-col", title: c.label }, c.short)),
       h("th", { scope: "col", class: "num" }, "Done"))),
     h("tbody", null, l.marks.map((m) => {
-      const values = MARK_COLUMNS.map((c) => markValue(c.key, m.marks));
+      // the save stores bits (1 = normal, 2 = hard), so a hard win usually reads 3
+      const values = MARK_COLUMNS.map((c) => Math.min(2, markValue(c.key, m.marks)));
       const done = values.filter((v) => v > 0).length;
       const hard = values.filter((v) => v >= 2).length;
       return h("tr", null,
