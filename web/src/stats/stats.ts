@@ -169,3 +169,46 @@ export function endings(runs: Run[]): CountGroup[] {
     return { key: label, label };
   }).sort((a, b) => b.count - a.count);
 }
+
+export interface RunRecord {
+  label: string;
+  value: number;
+  kind: "duration" | "count" | "stat" | "streak";
+  run: Run;
+}
+
+/** Best values over the given runs, each with the run that set it (the first one, on a tie). */
+export function records(runs: Run[], countQuits: boolean): RunRecord[] {
+  const out: RunRecord[] = [];
+  const best = (label: string, kind: RunRecord["kind"], list: Run[], pick: (r: Run) => number | undefined, lowest = false) => {
+    let top: { value: number; run: Run } | undefined;
+    for (const run of list) {
+      const value = pick(run);
+      if (value === undefined || !Number.isFinite(value)) continue;
+      if (!top || (lowest ? value < top.value : value > top.value)) top = { value, run };
+    }
+    if (top) out.push({ label, kind, ...top });
+  };
+  const wins = runs.filter((r) => r.result.type === "win");
+  const played = runs.filter((r) => r.result.type === "win" || r.result.type === "death");
+  best("Fastest win", "duration", wins, (r) => r.durationFrames, true);
+  best("Longest run", "duration", played, (r) => r.durationFrames);
+  best("Most items in a run", "count", runs, (r) => r.items.filter((i) => !i.starting).length || undefined);
+  best("Highest damage", "stat", runs, (r) => r.stats?.damage);
+  best("Highest tears", "stat", runs, (r) => r.stats?.tears);
+  best("Highest speed", "stat", runs, (r) => r.stats?.speed);
+  best("Highest luck", "stat", runs, (r) => r.stats?.luck);
+
+  // win streak in the order the runs were played; a death ends it, a quit too when quits count
+  const ordered = [...runs].filter((r) => r.startedAt).sort((a, b) => a.startedAt!.localeCompare(b.startedAt!));
+  let cur = 0;
+  let streak: { value: number; run: Run } | undefined;
+  for (const r of ordered) {
+    if (r.result.type === "win") {
+      cur++;
+      if (!streak || cur > streak.value) streak = { value: cur, run: r };
+    } else if (isDecided(r, countQuits)) cur = 0;
+  }
+  if (streak && streak.value > 1) out.push({ label: "Longest win streak", kind: "streak", ...streak });
+  return out;
+}

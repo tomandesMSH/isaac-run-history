@@ -1,12 +1,12 @@
 // Statistics page.
 
 import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
-import { duration, percent } from "../format";
+import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import {
-  applyFilters, bestItems, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, summary,
-  winRateByCharacter, type CountGroup, type ItemGroup, type StatsOptions,
+  applyFilters, bestItems, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary,
+  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions,
 } from "../stats/stats";
 
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
@@ -49,6 +49,24 @@ function itemTable(groups: ItemGroup[], mode: "count" | "winrate", baseline: num
         h("td", { class: "bar-cell" }, bar(g.winRate,
           g.decided ? `${percent(g.winRate)}${mode === "winrate" ? ` (${diff >= 0 ? "+" : ""}${Math.round(diff * 100)})` : ""}` : "–", "win")));
     })));
+}
+
+function recordValue(r: RunRecord): string {
+  if (r.kind === "duration") return duration(r.value);
+  if (r.kind === "streak") return `${r.value} wins`;
+  if (r.kind === "stat") return String(Math.round(r.value * 100) / 100);
+  return String(r.value);
+}
+
+// each record is a tile: the value, what it is, and a link to the run that set it
+function recordTiles(list: RunRecord[]): HTMLElement {
+  if (list.length === 0) return emptyNote("No runs yet.");
+  return h("div", { class: "stat-tiles compact records" }, list.map((r) => h("div", { class: "stat-tile" },
+    h("div", null,
+      h("div", { class: "stat-tile-value" }, recordValue(r)),
+      h("div", { class: "stat-tile-label" }, r.label),
+      h("a", { class: "stat-tile-label", href: `#/run/${encodeURIComponent(r.run.id)}`, title: dateTime(r.run.startedAt) },
+        `${characterName(r.run)}${r.kind === "streak" ? ", last win" : ""} →`)))));
 }
 
 export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: StatsOptions) => void): HTMLElement {
@@ -98,6 +116,7 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
     h("p", { class: "page-note" }, "Only runs recorded since you installed the mod show here. For your whole save's totals, see ",
       h("a", { href: "#/lifetime" }, "Lifetime"), "."),
     kpis,
+    card("Personal records", recordTiles(records(runs, opts.countQuits)), { wide: true }),
     h("div", { class: "grid" },
       card("Win rate by character", charTable),
       card("Endings", countList(endings(runs), "win", "No wins yet.", () => runsLink({ result: "win" }))),

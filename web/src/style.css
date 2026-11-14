@@ -467,3 +467,4 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
 .stat-tile-value { font-family: var(--block); font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
 .stat-tile-label { color: var(--ink-muted); font-size: 0.85rem; line-height: 1.15; }
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.records .stat-tile { align-items: flex-start; }
