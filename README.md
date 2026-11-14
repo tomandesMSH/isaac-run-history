@@ -96,6 +96,7 @@ cd web
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # static site in web/dist
+npm test         # statistics and export parsing (Node's test runner, bundled by Vite)
 ```
 
 The page is live at **https://tomandes.eu/isaac-run-history/**: every push to `main`
