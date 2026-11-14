@@ -393,7 +393,7 @@ STAT_ICONS = {
     "rainbowpoop": ("grid/grid_poop_rainbow.png", (0, 0, 32, 32)),
     # minimap_icons.anm2: IconArcade, IconSlot, IconBattery, IconIsaacsRoom (the bed)
     "arcade": ("ui/minimap_icons.png", (96, 16, 112, 32)),
-    "slot": ("ui/minimap_icons.png", (16, 96, 32, 112)),  # IconSlot frame 3: the slot machine
+    "slot": ("ui/minimap_icons.png", (0, 96, 16, 112)),  # IconSlot frame 2: the red slot machine with the lever
     "batterymap": ("ui/minimap_icons.png", (32, 64, 48, 80)),
     "bed": ("ui/minimap_icons.png", (0, 32, 16, 48)),
     # entities: the special shopkeeper, the shell game's dude, the overcharge battery effect
