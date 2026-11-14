@@ -2,7 +2,7 @@
 // counters). They cover the whole save file, not only the runs the mod recorded.
 
 import { CHARACTERS } from "../data/game";
-import { itemInfo } from "../data/items";
+import { itemInfo, uiIcon } from "../data/items";
 import { bar, card, emptyNote, h, itemChip } from "../dom";
 import { dateTime, percent } from "../format";
 import type { Lifetime } from "../model/schema";
@@ -47,6 +47,91 @@ const LABELS: Record<string, string> = {
   DAILYS_STREAK: "Daily run win streak",
   SHELLGAMES_PLAYED: "Shell games played",
 };
+
+// The game's other counters, grouped. A tile shows one counter, or the sum of every counter whose
+// name starts with a prefix (Greed coins are counted per character). Zero tiles are left out.
+interface Tile { label: string; icon?: string; keys?: string[]; prefix?: string }
+
+const GREED_PER_CHARACTER = "GREED_MODE_COINS_DONATED_WITH_";
+
+const TILE_GROUPS: { title: string; tiles: Tile[] }[] = [
+  {
+    title: "Deals & shops",
+    tiles: [
+      { label: "Devil deals taken", icon: "devil", keys: ["DEVIL_DEALS_TAKEN"] },
+      { label: "Angel deals taken", icon: "angel", keys: ["ANGEL_DEALS_TAKEN"] },
+      { label: "Shop items bought", icon: "coin", keys: ["SHOP_ITEMS_BOUGHT"] },
+      { label: "Shopkeepers killed", keys: ["SHOPKEEPER_KILLED"] },
+      { label: "Arcades entered", keys: ["ARCADES_ENTERED"] },
+      { label: "Shell games played", keys: ["SHELLGAMES_PLAYED"] },
+      { label: "Slot machines broken", keys: ["SLOT_MACHINES_BROKEN"] },
+      { label: "Blood donations", icon: "heart", keys: ["BLOOD_DONATION_MACHINE_USED"] },
+      { label: "Coins in the donation machine", icon: "coin", keys: ["DONATION_MACHINE_COUNTER", "DONATE_MACHINE_COUNTER"] },
+      { label: "Coins in the Greed donation machine", icon: "goldcoin", keys: ["GREED_DONATION_MACHINE_COUNTER"] },
+      { label: "Coins donated in Greed mode", icon: "goldcoin", prefix: GREED_PER_CHARACTER },
+      { label: "Battery bums killed", keys: ["BATTERY_BUMS_KILLED"] },
+      { label: "Items from battery bums", keys: ["BATTERY_BUM_COLLECTIBLE_PAYOUTS"] },
+      { label: "Beds slept in", keys: ["BEDS_USED"] },
+    ],
+  },
+  {
+    title: "Destruction",
+    tiles: [
+      { label: "Rocks destroyed", icon: "rock", keys: ["ROCKS_DESTROYED"] },
+      { label: "Tinted rocks", icon: "rock", keys: ["TINTED_ROCKS_DESTROYED"] },
+      { label: "Super special rocks", icon: "rock", keys: ["SUPER_SPECIAL_ROCKS_DESTROYED"] },
+      { label: "Poop destroyed", icon: "poop", keys: ["POOP_DESTROYED"] },
+      { label: "Rainbow poop", icon: "rainbowpoop", keys: ["RAINBOW_POOP_DESTROYED"] },
+      { label: "Secret room walls opened", icon: "bomb", keys: ["SECRET_ROOMS_WALLS_OPENED"] },
+    ],
+  },
+  {
+    title: "Pickups & consumables",
+    tiles: [
+      { label: "Pills eaten", icon: "pill", keys: ["PILLS_EATEN"] },
+      { label: "Cards used", icon: "card", keys: ["CARDS_USED"] },
+      { label: "XIII - Death cards used", icon: "card", keys: ["XIII_DEATH_CARD_USED"] },
+      { label: "Batteries collected", icon: "battery", keys: ["BATTERIES_COLLECTED"] },
+      { label: "Chests opened with a key", icon: "key", keys: ["CHESTS_OPENED_WITH_KEY"] },
+      { label: "Blood Clot picked up", keys: ["BLOOD_CLOT_ITEM_AQUIRED"] },
+      { label: "Rubber Cement picked up", keys: ["RUBBER_CEMENT_ITEM_AQUIRED"] },
+      { label: "Eden's Blessings for the next run", keys: ["EDENS_BLESSINGS_NEXT_RUN"] },
+    ],
+  },
+  {
+    title: "Daily runs",
+    tiles: [
+      { label: "Daily runs played", icon: "daily", keys: ["DAILYS_PLAYED"] },
+      { label: "Daily runs won", icon: "daily", keys: ["DAILYS_WON"] },
+      { label: "Daily win streak", icon: "daily", keys: ["DAILYS_STREAK"] },
+    ],
+  },
+];
+
+function tileValue(t: Tile, c: Record<string, number>): number {
+  if (t.prefix) return Object.entries(c).filter(([k]) => k.startsWith(t.prefix!)).reduce((a, [, v]) => a + v, 0);
+  return (t.keys ?? []).reduce((a, k) => a + (c[k] ?? 0), 0);
+}
+
+function tileGroups(c: Record<string, number>): HTMLElement[] {
+  const used = new Set<string>(HEADLINE);
+  for (const g of TILE_GROUPS) for (const t of g.tiles) for (const k of t.keys ?? []) used.add(k);
+  // whatever the game counts that isn't grouped above still shows, under Other
+  const other: Tile[] = Object.keys(c)
+    .filter((k) => !used.has(k) && !k.startsWith(GREED_PER_CHARACTER))
+    .sort((a, b) => label(a).localeCompare(label(b)))
+    .map((k) => ({ label: label(k), keys: [k] }));
+  return [...TILE_GROUPS, { title: "Other", tiles: other }].flatMap((g) => {
+    const tiles = g.tiles.map((t) => ({ t, v: tileValue(t, c) })).filter(({ v }) => v > 0);
+    if (tiles.length === 0) return [];
+    return [card(g.title, h("div", { class: "stat-tiles" }, tiles.map(({ t, v }) => {
+      const icon = uiIcon(t.icon);
+      return h("div", { class: "stat-tile" },
+        icon ? h("img", { class: "stat-tile-icon", src: icon, alt: "" }) : h("span", { class: "stat-tile-icon" }),
+        h("div", null, h("div", { class: "stat-tile-value" }, num(v)), h("div", { class: "stat-tile-label" }, t.label)));
+    })), { wide: true })];
+  });
+}
 
 function label(name: string): string {
   if (LABELS[name]) return LABELS[name];
@@ -98,7 +183,6 @@ function countBars(rows: { label: string; value: number }[], kind: "death" | "wi
   return h("table", { class: "table" }, h("tbody", null, rows.map((r) =>
     h("tr", null,
       h("th", { scope: "row" }, r.label),
-      h("td", { class: "num" }, num(r.value)),
       h("td", { class: "bar-cell" }, bar(r.value / max, num(r.value), kind))))));
 }
 
@@ -141,8 +225,6 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
     .map((e) => ({ label: enemyName(e), value: e.kills }));
   const bosses = FINAL_BOSSES.map(([k, name]) => ({ label: name, value: c[k] ?? 0 })).filter((r) => r.value > 0);
 
-  const other = Object.entries(c).filter(([k]) => !HEADLINE.has(k)).sort((a, b) => label(a[0]).localeCompare(label(b[0])));
-
   const missing = col.missing.map((m) => itemInfo(m.id, m.name));
 
   return h("div", { class: "page" },
@@ -154,17 +236,16 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
       wide: true,
       note: "N = beaten on normal, H = on hard. Greed counts Greedier as hard.",
     }),
-    h("div", { class: "grid" },
+    h("div", { class: "grid grid-3" },
       card("What killed you most", countBars(deadliest, "death"), { note: "From the game's bestiary: every death, not only recorded runs." }),
       card("Final bosses beaten", countBars(bosses, "win")),
-      card("Most killed enemies", countBars(mostKilled, "neutral")),
-      card("Everything else", other.length
-        ? h("table", { class: "table" }, h("tbody", null, other.map(([k, v]) =>
-          h("tr", null, h("th", { scope: "row" }, label(k)), h("td", { class: "num" }, num(v))))))
-        : emptyNote("No other counters."))),
-    card(`Items not in your collection yet (${missing.length})`,
-      missing.length
-        ? h("div", { class: "item-list collection-missing" }, missing.map((i) => itemChip(i, { title: i.name })))
-        : emptyNote("You have every item. Dead God?"),
-      { wide: true, note: col.total ? h("span", null, bar(col.have.length / col.total, `${col.have.length} of ${col.total} collected`, "win")) : undefined }));
+      card("Most killed enemies", countBars(mostKilled, "neutral"))),
+    tileGroups(c),
+    missing.length
+      ? card(`Items not in your collection yet (${missing.length})`,
+        h("div", { class: "item-list collection-missing" }, missing.map((i) => itemChip(i, { title: i.name }))),
+        { wide: true, note: col.total ? h("span", null, bar(col.have.length / col.total, `${col.have.length} of ${col.total} collected`, "win")) : undefined })
+      : col.total
+        ? card("Collection complete", bar(1, `${col.have.length} of ${col.total} collected`, "win"), { wide: true })
+        : null);
 }

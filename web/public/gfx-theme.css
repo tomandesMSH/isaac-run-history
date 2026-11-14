@@ -294,3 +294,5 @@
 .has-gfx.no-data .empty h1 { font-size: calc(var(--up) * 3); }
 .has-gfx .dialog { padding: 0 10px 14px; }
 .has-gfx .dialog textarea { font-size: 0.9rem; }
+.has-gfx .stat-tile-value { font-family: var(--block); font-weight: 400; font-size: calc(var(--up) * 2); }
+.has-gfx .stat-tile-label { font-size: var(--tm); }

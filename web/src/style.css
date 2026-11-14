@@ -454,3 +454,12 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
 .dialog textarea { resize: vertical; }
 .dialog textarea:focus-visible { outline: 2px solid var(--title-red); outline-offset: 0; }
 .dialog-actions { padding: 0.2rem 0.2rem 0; }
+
+/* ---------- lifetime: counter tiles ---------- */
+
+.stat-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.9rem 1.2rem; }
+.stat-tile { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+.stat-tile-icon { width: 44px; height: 44px; flex: none; image-rendering: pixelated; object-fit: none; }
+.stat-tile-value { font-family: var(--block); font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
+.stat-tile-label { color: var(--ink-muted); font-size: 0.85rem; line-height: 1.15; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }

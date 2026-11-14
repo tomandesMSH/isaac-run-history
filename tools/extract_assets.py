@@ -373,6 +373,44 @@ def build_music_ui(gfx: Path) -> None:
     strip.save(out / "music-volume.png")
 
 
+# Icons for the Lifetime page's counter tiles: (sheet, crop box). HUD sprites are 16x16; pickups are
+# trimmed to their first frame; rocks and poop are 32x32 grid tiles.
+STAT_ICONS = {
+    "coin": ("ui/hudpickups.png", (0, 0, 16, 16)),
+    "key": ("ui/hudpickups.png", (16, 0, 32, 16)),
+    "goldcoin": ("ui/hudpickups.png", (48, 0, 64, 16)),
+    "chest": ("ui/hudpickups.png", (64, 0, 80, 16)),
+    "bomb": ("ui/hudpickups.png", (0, 16, 16, 32)),
+    "poop": ("ui/hudpickups.png", (80, 16, 96, 32)),
+    "heart": ("ui/hudpickups.png", (112, 16, 128, 32)),
+    "daily": ("ui/hudpickups.png", (0, 32, 16, 48)),
+    "devil": ("ui/hudstats2.png", (48, 0, 64, 16)),
+    "angel": ("ui/hudstats2.png", (48, 16, 64, 32)),
+    "pill": ("items/pick ups/pickup_007_pill.png", (0, 0, 32, 32)),
+    "card": ("items/pick ups/pickup_017_card.png", (0, 0, 32, 32)),
+    "battery": ("items/pick ups/pickup_018_littlebattery.png", (0, 0, 32, 32)),
+    "rock": ("grid/rocks_basement.png", (0, 0, 32, 32)),
+    "rainbowpoop": ("grid/grid_poop_rainbow.png", (0, 0, 32, 32)),
+}
+
+
+def build_stat_icons(gfx: Path) -> list[str]:
+    out = OUT / "ui" / "icons"
+    out.mkdir(parents=True, exist_ok=True)
+    # Every icon is saved ready to draw on a 44px tile: HUD icons (16px) and pickups (~20px) at 2x
+    # like the game draws them, the bigger grid sprites (rocks, poop) as they are.
+    size = 44
+    for name, (sheet, box) in STAT_ICONS.items():
+        img = Image.open(gfx / sheet).convert("RGBA").crop(box)
+        trimmed = img.crop(img.getbbox() or (0, 0, 1, 1))
+        if trimmed.width * 2 <= size and trimmed.height * 2 <= size:
+            trimmed = trimmed.resize((trimmed.width * 2, trimmed.height * 2), Image.NEAREST)
+        icon = Image.new("RGBA", (size, size))
+        icon.alpha_composite(trimmed, ((size - trimmed.width) // 2, (size - trimmed.height) // 2))
+        icon.save(out / f"{name}.png")
+    return list(STAT_ICONS)
+
+
 def build_ui(gfx: Path) -> None:
     build_music_ui(gfx)
     ui = gfx / "ui"
@@ -539,6 +577,7 @@ def main() -> None:
     backgrounds = build_rooms(res / "gfx", res)
     sprites = build_deco(res / "gfx")
     sprites.update(build_details(res / "gfx"))
+    icons = build_stat_icons(res / "gfx")
     build_ui(res / "gfx")
     print("fonts")
     bmfont_to_ttf(res / "font" / "teammeatfont16bold.fnt", OUT / "fonts" / "teammeat.ttf", "TeamMeat")
@@ -553,6 +592,7 @@ def main() -> None:
         "backgrounds": backgrounds,
         "defaultBackground": DEFAULT_BACKGROUND,
         "sprites": sprites,
+        "icons": icons,
         "items": items,
         "trinkets": trinkets,
     }), encoding="utf-8")

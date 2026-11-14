@@ -8,11 +8,18 @@ export const VANILLA_MAX_TRINKET = 189;
 
 export const ITEM_ICONS: Record<number, string> = {};
 export const TRINKET_ICONS: Record<number, string> = {};
+const UI_ICONS = new Set<string>();
 
 /** Icons extracted from the game by tools/extract_assets.py (gfx/manifest.json lists them). */
-export function useExtractedIcons(manifest: { items?: number[]; trinkets?: number[] }): void {
+export function useExtractedIcons(manifest: { items?: number[]; trinkets?: number[]; icons?: string[] }): void {
   for (const id of manifest.items ?? []) ITEM_ICONS[id] = `gfx/items/${id}.png`;
   for (const id of manifest.trinkets ?? []) TRINKET_ICONS[id] = `gfx/trinkets/${id}.png`;
+  for (const name of manifest.icons ?? []) UI_ICONS.add(name);
+}
+
+/** A small HUD/pickup icon from the game (coin, pill, devil...), when the graphics are there. */
+export function uiIcon(name: string | undefined): string | undefined {
+  return name && UI_ICONS.has(name) ? `gfx/ui/icons/${name}.png` : undefined;
 }
 
 export interface ItemInfo {
