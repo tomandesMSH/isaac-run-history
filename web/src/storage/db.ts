@@ -3,9 +3,18 @@
 
 import type { Lifetime, Run } from "../model/schema";
 
+/** Someone else's export, kept apart from your own runs. */
+export interface Friend {
+  name: string;
+  runs: Run[];
+  lifetime?: Lifetime;
+  importedAt: string;
+}
+
 const DB_NAME = "isaac-run-history";
 const STORE = "runs";
 const LIFETIME = "lifetime"; // one record per save slot, keyed by slot
+const FRIENDS = "friends"; // someone else's export to compare with, keyed by the name given to it
 const HANDLES = "handles"; // the connected history folder (FileSystemDirectoryHandle), key "history"
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -17,12 +26,13 @@ function open(): Promise<IDBDatabase> {
         reject(new Error("This browser has no IndexedDB, runs can't be kept between visits."));
         return;
       }
-      const req = indexedDB.open(DB_NAME, 3);
+      const req = indexedDB.open(DB_NAME, 4);
       req.onupgradeneeded = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
         if (!db.objectStoreNames.contains(LIFETIME)) db.createObjectStore(LIFETIME, { keyPath: "slot" });
         if (!db.objectStoreNames.contains(HANDLES)) db.createObjectStore(HANDLES);
+        if (!db.objectStoreNames.contains(FRIENDS)) db.createObjectStore(FRIENDS, { keyPath: "name" });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error ?? new Error("Couldn't open the browser database."));
@@ -117,5 +127,28 @@ export async function saveHandle(handle: FileSystemDirectoryHandle | undefined):
   const tx = db.transaction(HANDLES, "readwrite");
   if (handle) tx.objectStore(HANDLES).put(handle, "history");
   else tx.objectStore(HANDLES).delete("history");
+  await done(tx);
+}
+
+export async function loadFriends(): Promise<Friend[]> {
+  const db = await open();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(FRIENDS, "readonly").objectStore(FRIENDS).getAll();
+    req.onsuccess = () => resolve(req.result as Friend[]);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveFriend(f: Friend): Promise<void> {
+  const db = await open();
+  const tx = db.transaction(FRIENDS, "readwrite");
+  tx.objectStore(FRIENDS).put(f);
+  await done(tx);
+}
+
+export async function deleteFriend(name: string): Promise<void> {
+  const db = await open();
+  const tx = db.transaction(FRIENDS, "readwrite");
+  tx.objectStore(FRIENDS).delete(name);
   await done(tx);
 }

@@ -143,8 +143,8 @@ main, .topbar { position: relative; z-index: 1; }
 
 .topbar {
   position: sticky; top: 0; z-index: 5;
-  display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
-  padding: 0.6rem max(16px, calc((100vw - 1440px) / 2));
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.6rem max(16px, calc((100vw - 1600px) / 2));
   background: var(--wall-dark);
   border-bottom: 4px solid #000;
   box-shadow: 0 4px 0 rgb(0 0 0 / 0.35);
@@ -595,3 +595,5 @@ a.boss[href]:hover .boss-nameimg, a.boss[href]:hover .collect-name { filter: dro
 .ach.locked .ach-img { filter: grayscale(1) brightness(0.7); opacity: 0.35; }
 .ach.locked .ach-name { color: var(--ink-muted); }
 .kpi .kpi-sub a { color: var(--title-red); }
+.cmp-table td.cmp-better { color: #4b8f2a; font-weight: 700; }
+.cmp-table td.cmp-better::after { content: " ▲"; font-size: 0.7em; }

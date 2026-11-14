@@ -17,6 +17,7 @@ import { renderAchievements } from "./views/achievements";
 import { renderBestiary } from "./views/bestiary";
 import { renderBosses } from "./views/bosses";
 import { renderChallenges } from "./views/challenges";
+import { renderCompare } from "./views/compare";
 import { renderCharacter } from "./views/character";
 import { renderItems } from "./views/items";
 import { renderLifetime } from "./views/lifetime";
@@ -251,6 +252,9 @@ function render(): void {
     case "items":
       clear(main, renderItems(state.lifetimes, state.lifetimeSlot, state.runs, state.statsOptions.countQuits));
       window.scrollTo(0, 0);
+      break;
+    case "compare":
+      clear(main, renderCompare(state.runs, state.lifetimes, state.lifetimeSlot, state.statsOptions.countQuits, render));
       break;
     case "challenges":
       clear(main, renderChallenges(state.lifetimes, state.lifetimeSlot, state.runs));
