@@ -152,10 +152,28 @@ function num(n: number | undefined): string {
   return (n ?? 0).toLocaleString();
 }
 
-function kpi(title: string, value: string, sub?: string): HTMLElement {
+// A headline number counts up from 0 when the page shows (ease-out, ~1.2 s), unless the viewer
+// asked for reduced motion.
+function countUp(el: HTMLElement, to: number): void {
+  if (to <= 0 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ms = 1200;
+  let start: number | undefined;
+  const step = (t: number) => {
+    start ??= t;
+    const p = Math.min(1, (t - start) / ms);
+    el.textContent = num(Math.round(to * (1 - (1 - p) ** 3)));
+    if (p < 1 && (el.isConnected || t - start < 100)) requestAnimationFrame(step);
+  };
+  el.textContent = num(0);
+  requestAnimationFrame(step);
+}
+
+function kpi(title: string, value: string | number, sub?: string): HTMLElement {
+  const v = h("div", { class: "kpi-value" }, typeof value === "number" ? num(value) : value);
+  if (typeof value === "number") countUp(v, value);
   return h("div", { class: "kpi" },
     h("div", { class: "kpi-label" }, title),
-    h("div", { class: "kpi-value" }, value),
+    v,
     sub ? h("div", { class: "kpi-sub" }, sub) : null);
 }
 
@@ -222,11 +240,11 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
   const col = l.collection;
 
   const kpis = h("div", { class: "kpis" },
-    kpi("Deaths", num(c.DEATHS), `${num(totalBestiaryDeaths)} of them to enemies`),
-    kpi("Best streak", num(c.BEST_STREAK), `current: ${num(c.STREAK_COUNTER)}${c.NEGATIVE_STREAK_COUNTER ? `, losing: ${num(c.NEGATIVE_STREAK_COUNTER)}` : ""}`),
-    kpi("Enemies killed", num(totalKills), `${l.bestiary.length} kinds met`),
-    kpi("Items collected", col.total ? num(col.have.length) : "–", col.total ? `of ${num(col.total)} · ${percent(col.have.length / col.total)}` : undefined),
-    kpi("Eden tokens", num(c.EDEN_TOKENS)));
+    kpi("Deaths", c.DEATHS ?? 0, `${num(totalBestiaryDeaths)} of them to enemies`),
+    kpi("Best streak", c.BEST_STREAK ?? 0, `current: ${num(c.STREAK_COUNTER)}${c.NEGATIVE_STREAK_COUNTER ? `, losing: ${num(c.NEGATIVE_STREAK_COUNTER)}` : ""}`),
+    kpi("Enemies killed", totalKills, `${l.bestiary.length} kinds met`),
+    kpi("Items collected", col.total ? col.have.length : "–", col.total ? `of ${num(col.total)} · ${percent(col.have.length / col.total)}` : undefined),
+    kpi("Eden tokens", c.EDEN_TOKENS ?? 0));
 
   const deadliest = [...l.bestiary].filter((e) => e.deaths > 0).sort((a, b) => b.deaths - a.deaths).slice(0, 15)
     .map((e) => ({ label: enemyName(e), value: e.deaths }));
