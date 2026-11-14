@@ -3,6 +3,7 @@
 
 import { itemInfo, uiIcon } from "../data/items";
 import { achievementCount } from "./achievements";
+import { challengeCount } from "./challenges";
 import { marksView } from "./marks";
 import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
 import { dateTime, percent } from "../format";
@@ -183,15 +184,18 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
   const totalBestiaryDeaths = l.bestiary.reduce((a, e) => a + e.deaths, 0);
   const col = l.collection;
   const ach = achievementCount(l);
+  const chal = challengeCount(l);
 
-  const kpis = h("div", { class: "kpis" },
+  const kpis = h("div", { class: "kpis kpis-many" },
     kpi("Deaths", c.DEATHS ?? 0, `${num(totalBestiaryDeaths)} of them to enemies`),
     kpi("Best streak", c.BEST_STREAK ?? 0, `current: ${num(c.STREAK_COUNTER)}${c.NEGATIVE_STREAK_COUNTER ? `, losing: ${num(c.NEGATIVE_STREAK_COUNTER)}` : ""}`),
     kpi("Enemies killed", totalKills, h("a", { href: "#/bestiary", title: "Open the bestiary" }, `${l.bestiary.length} kinds met →`)),
     kpi("Items collected", col.total ? col.have.length : "–", col.total ? h("a", { href: "#/items", title: "Open the item collection" }, `of ${num(col.total)} · ${percent(col.have.length / col.total)} →`) : undefined),
     kpi("Eden tokens", c.EDEN_TOKENS ?? 0),
     ach ? kpi("Achievements", ach.unlocked, h("a", { href: "#/achievements", title: "Open the achievements" }, `of ${num(ach.total)} →`))
-      : kpi("Achievements", "?", h("a", { href: "#/achievements" }, "needs mod 1.2 →")));
+      : kpi("Achievements", "?", h("a", { href: "#/achievements" }, "needs mod 1.2 →")),
+    chal ? kpi("Challenges", chal.done, h("a", { href: "#/challenges", title: "Open the challenges" }, `of ${num(chal.total)} →`))
+      : kpi("Challenges", "?", h("a", { href: "#/challenges" }, "needs mod 1.3 →")));
 
   const deadliest = [...l.bestiary].filter((e) => e.deaths > 0).sort((a, b) => b.deaths - a.deaths).slice(0, 15)
     .map((e) => ({ label: enemyName(e), value: e.deaths }));

@@ -7,6 +7,8 @@ export interface RunFilters {
   item?: string;
   /** BossType beaten in the run */
   boss?: string;
+  /** Challenge id */
+  challenge?: string;
 }
 
 export type Route =
@@ -16,11 +18,12 @@ export type Route =
   | { name: "items" }
   | { name: "achievements" }
   | { name: "bosses" }
+  | { name: "challenges" }
   | { name: "character"; key: string }
   | { name: "runs"; filters: RunFilters }
   | { name: "run"; id: string };
 
-const FILTER_KEYS: (keyof RunFilters)[] = ["char", "result", "difficulty", "item", "boss"];
+const FILTER_KEYS: (keyof RunFilters)[] = ["char", "result", "difficulty", "item", "boss", "challenge"];
 
 export function parseRoute(hash: string): Route {
   const [path, query = ""] = hash.replace(/^#\/?/, "").split("?");
@@ -31,6 +34,7 @@ export function parseRoute(hash: string): Route {
   if (parts[0] === "items") return { name: "items" };
   if (parts[0] === "achievements") return { name: "achievements" };
   if (parts[0] === "bosses") return { name: "bosses" };
+  if (parts[0] === "challenges") return { name: "challenges" };
   if (parts[0] === "character" && parts[1]) return { name: "character", key: decodeURIComponent(parts[1]) };
   if (parts[0] === "runs") {
     const q = new URLSearchParams(query);

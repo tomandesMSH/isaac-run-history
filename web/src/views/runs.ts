@@ -12,6 +12,7 @@ function matches(run: Run, f: RunFilters): boolean {
   if (f.char && characterKey(run) !== f.char) return false;
   if (f.result && run.result.type !== f.result) return false;
   if (f.difficulty && run.difficulty !== f.difficulty) return false;
+  if (f.challenge && String(run.challenge?.id ?? "") !== f.challenge) return false;
   if (f.boss && !run.floors.some((fl) => (fl.bosses ?? []).some((b) => String(b.bossId) === f.boss))) return false;
   // "Brimstone + Tammy's Head": every part has to be in the run
   for (const part of (f.item ?? "").split(" + ")) {

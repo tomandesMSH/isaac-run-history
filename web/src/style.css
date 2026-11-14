@@ -230,6 +230,7 @@ label.check { cursor: pointer; }
 /* ---------- KPIs ---------- */
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1.2rem; }
+.kpis-many { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 0.8rem; }
 .kpi { padding: 1rem 0.9rem 0.9rem; text-align: center; }
 .kpi:nth-child(odd) { transform: rotate(-1deg); }
 .kpi:nth-child(even) { transform: rotate(1deg); }
@@ -554,6 +555,21 @@ a.collect[href]:hover .collect-name { text-decoration: underline; }
 .collect.missing .collect-name { color: var(--ink-muted); }
 .quality { font-weight: 700; }
 .quality.q4 { color: var(--title-red); } .quality.q3 { color: var(--brown-dark); }
+/* ---------- challenges ---------- */
+
+.chal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 1rem; }
+.chal { border: 2px solid var(--paper-shade); color: var(--ink); padding: 0.7rem 0.9rem; border-radius: 4px; display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+.chal.done { box-shadow: inset 4px 0 0 #4b8f2a; }
+.chal.todo { box-shadow: inset 4px 0 0 var(--title-red); }
+.chal-head { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.chal-head h3 { margin: 0; flex: 1; min-width: 0; }
+.chal-num, .chal-meta, .chal-rule-label { color: var(--ink-muted); }
+.chal-rule, .chal-unlocks { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
+.chal-unlock { display: inline-flex; align-items: center; gap: 0.3rem; }
+.chal-unlock img { width: 66px; height: auto; image-rendering: pixelated; }
+.chip-done { background: #4b8f2a; color: #fff; padding: 0.05rem 0.35rem; }
+.chip-todo { background: var(--title-red); color: #fff; padding: 0.05rem 0.35rem; }
+
 /* ---------- bosses ---------- */
 
 .boss-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.2rem 0.8rem; }

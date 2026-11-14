@@ -733,6 +733,55 @@ def write_bosses_web(res: Path) -> int:
     return len(entries)
 
 
+# The page's challenges: the rules from challenges.xml (character, starting items, goal, banned rooms,
+# curses) and the achievements beating one unlocks (achievements.xml's "Beat Challenge #N" notes).
+CHALLENGES_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "challenges.json"
+
+
+def write_challenges_web(res: Path) -> int:
+    xml = (res / "challenges.xml").read_text(encoding="utf-8", errors="replace")
+    unlocks: dict[int, list[int]] = {}
+    for a in json.loads(ACHIEVEMENTS_JSON.read_text(encoding="utf-8")):
+        m = re.search(r"\bbeat challenge #?(\d+)\b", a.get("how", ""), re.I)
+        if m:
+            unlocks.setdefault(int(m.group(1)), []).append(a["id"])
+    ints = lambda v: [int(x) for x in re.split(r"[ ,]+", v.strip()) if x.lstrip("-").isdigit()]
+    # starting item and trinket names, so the page has them without an export
+    strings = {**english_entity_names(res, None), **english_entity_names(res, "Items")}
+    named: dict[str, dict[int, str]] = {"items": {}, "trinkets": {}}
+    for tag, attrs in re.findall(r"<(passive|active|familiar|trinket)\s([^>]*)>", (res / "items.xml").read_text(encoding="utf-8", errors="replace")):
+        a = dict(re.findall(r'(\w+)="([^"]*)"', attrs))
+        if "id" in a:
+            name = html.unescape(a.get("name", ""))
+            named["trinkets" if tag == "trinket" else "items"][int(a["id"])] = strings.get(name[1:], name) if name.startswith("#") else name
+    entries = []
+    for m in re.finditer(r"<challenge\s([^>]*)/?>", xml):
+        a = {k: html.unescape(v) for k, v in re.findall(r'(\w+)="([^"]*)"', m.group(1))}
+        if "id" not in a:
+            continue
+        i = int(a["id"])
+        e = {"id": i, "name": a.get("name", ""), "player": int(a.get("playertype", "0")), "endStage": int(a.get("endstage", "0"))}
+        for key, attr in (("items", "startingitems"), ("trinkets", "startingtrinkets")):
+            if a.get(attr):
+                e[key] = [{"id": x, "name": named[key].get(x, f"#{x}")} for x in ints(a[attr])]
+        if a.get("roomfilter"):
+            e["noRooms"] = ints(a["roomfilter"])
+        for key, attr in (("curses", "getcurse"), ("noCurses", "cursefilter")):
+            if a.get(attr):
+                e[key] = int(a[attr])
+        for flag, attr in (("altPath", "altpath"), ("secretPath", "secretpath")):
+            if a.get(attr) == "true":
+                e[flag] = True
+        if a.get("canshoot") == "false":
+            e["noShooting"] = True
+        if i in unlocks:
+            e["unlocks"] = unlocks[i]
+        entries.append(e)
+    entries.sort(key=lambda e: e["id"])
+    CHALLENGES_JSON.write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return len(entries)
+
+
 # The page's bestiary: the full list (bundled into the page, so names work without graphics) and
 # the death screen's ink portraits, 64x48 cells: enemies 16 per row, bosses 7 per row.
 BESTIARY_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "bestiary.json"
@@ -874,6 +923,7 @@ def main() -> None:
     print(f"items for the page: {write_items_web(res)}")
     print(f"achievements for the page: {write_achievements_web(res)}")
     print(f"bosses for the page: {write_bosses_web(res)}")
+    print(f"challenges for the page: {write_challenges_web(res)}")
 
     (OUT / "manifest.json").write_text(json.dumps({
         "version": 2,

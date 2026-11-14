@@ -81,6 +81,8 @@ export interface Lifetime {
   collection: { total: number; have: number[]; missing: { id: number; name?: string }[] };
   /** Unlocked achievement ids; missing in exports from mod versions before 1.2. */
   achievements?: number[];
+  /** ids of the finished challenges (mod 1.3+) */
+  challenges?: number[];
 }
 
 export interface ParsedExport {
@@ -107,6 +109,7 @@ function normalizeLifetime(raw: unknown, saveSlot?: number): Lifetime | undefine
       missing: arr<{ id: number; name?: string }>(col.missing),
     },
     achievements: l.achievements === undefined ? undefined : arr<number>(l.achievements),
+    challenges: l.challenges === undefined ? undefined : arr<number>(l.challenges),
   };
 }
 

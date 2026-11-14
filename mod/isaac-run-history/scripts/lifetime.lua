@@ -100,6 +100,20 @@ local function achievements(pgd)
   return out
 end
 
+-- The ids of every finished challenge. REPENTOGON has PersistentGameData:IsChallengeCompleted and
+-- Isaac.IsChallengeDone; whichever answers is used. The last id is Challenge.NUM_CHALLENGES - 1 when
+-- the enum has it, else 45 (the highest id in challenges.xml for Repentance+).
+local function challenges(pgd)
+  local last = (Challenge and Challenge.NUM_CHALLENGES and Challenge.NUM_CHALLENGES - 1) or 45
+  local out = {}
+  for id = 1, last do
+    local ok, done = pcall(function() return pgd:IsChallengeCompleted(id) end)
+    if not ok then ok, done = pcall(function() return Isaac.IsChallengeDone(id) end) end
+    if ok and done then out[#out + 1] = id end
+  end
+  return out
+end
+
 -- Everything at once; nil when the save can't be read yet (before the game has initialised).
 function lifetime.collect()
   local ok, pgd = pcall(Isaac.GetPersistentGameData)
@@ -112,6 +126,7 @@ function lifetime.collect()
       bestiary = bestiary(pgd),
       collection = collection(pgd),
       achievements = achievements(pgd),
+      challenges = challenges(pgd),
     }
   end)
   if not okAll then
