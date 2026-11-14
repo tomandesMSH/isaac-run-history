@@ -84,7 +84,7 @@ npm run dev      # http://localhost:5173
 npm run build    # static site in web/dist
 ```
 
-The page is live at **https://tomandesmsh.github.io/isaac-run-history/**: every push to `main`
+The page is live at **https://tomandes.eu/isaac-run-history/**: every push to `main`
 builds it and publishes it on GitHub Pages (`.github/workflows/pages.yml`). It's a static site with
 relative paths, so the contents of `web/dist` also work from any other host or subfolder.
 
