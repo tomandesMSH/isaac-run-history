@@ -3,7 +3,8 @@
 // Win rate = wins / decided runs. A run is decided when it was won or lost (died); quits and runs
 // cut short by a crash don't count unless countQuits is on, then they count as losses.
 
-import { BOSSES, curseNames, endingName, floorName, floorOrder } from "../data/game";
+import collectionData from "../data/collection.json";
+import { BOSSES, ROOM_TYPES, curseNames, endingName, floorName, floorOrder } from "../data/game";
 
 const BOSS_IDS = Object.keys(BOSSES).map(Number);
 import { itemInfo, trinketInfo, type ItemInfo } from "../data/items";
@@ -275,6 +276,68 @@ export function itemPairs(runs: Run[], countQuits: boolean, minRuns: number, lim
     .filter((g) => g.decided >= minRuns && g.wins > 0)
     .sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || a.label.localeCompare(b.label))
     .slice(0, limit);
+}
+
+const QUALITY = new Map((collectionData.items as { id: number; quality?: number }[]).map((i) => [i.id, i.quality]));
+const DEVIL_ROOMS = new Set([14, 22]); // devil room, black market
+const ANGEL_ROOMS = new Set([15]);
+
+/** Items picked up (starting ones left out) by the kind of room they were taken in. */
+export function itemSources(runs: Run[]): CountGroup[] {
+  return [...runs.flatMap((r) => r.items.filter((i) => !i.starting && i.roomType !== undefined))
+    .reduce((m, i) => {
+      const label = ROOM_TYPES[i.roomType!] ?? `Room type ${i.roomType}`;
+      const g = m.get(label) ?? { key: String(i.roomType), label, count: 0 };
+      g.count++;
+      return m.set(label, g);
+    }, new Map<string, CountGroup>()).values()].sort((a, b) => b.count - a.count);
+}
+
+/** Runs by the deals taken: devil items (devil room, black market), angel items, both or neither. Greed runs left out. */
+export function dealStats(runs: Run[], countQuits: boolean): WinGroup[] {
+  const groups = {
+    devil: winGroup("devil", "Devil deals"),
+    angel: winGroup("angel", "Angel items"),
+    both: winGroup("both", "Both"),
+    none: winGroup("none", "Neither"),
+  };
+  for (const r of runs) {
+    if (isGreed(r)) continue;
+    const taken = r.items.filter((i) => !i.starting);
+    const devil = taken.some((i) => DEVIL_ROOMS.has(i.roomType ?? -1));
+    const angel = taken.some((i) => ANGEL_ROOMS.has(i.roomType ?? -1));
+    addRun(groups[devil && angel ? "both" : devil ? "devil" : angel ? "angel" : "none"], r, countQuits);
+  }
+  return finish(Object.values(groups)).filter((g) => g.runs > 0);
+}
+
+export interface FloorQuality {
+  label: string;
+  order: number;
+  items: number;
+  /** average item quality (0-4) of the items with a known quality */
+  quality: number;
+}
+
+/** Items picked up per floor and their average quality (from the game's items_metadata.xml). */
+export function qualityByFloor(runs: Run[]): FloorQuality[] {
+  const groups = new Map<string, FloorQuality & { sum: number; rated: number }>();
+  for (const r of runs) {
+    for (const i of r.items) {
+      if (i.starting || i.floor <= 0 && r.partial) continue;
+      const f = r.floors[i.floor];
+      if (!f) continue;
+      const label = floorName(f.stage, f.stageType, isGreed(r));
+      const g = groups.get(label) ?? { label, order: floorOrder(f.stage, f.stageType) + (isGreed(r) ? 1000 : 0), items: 0, quality: 0, sum: 0, rated: 0 };
+      g.items++;
+      const q = QUALITY.get(i.id);
+      if (q !== undefined) { g.sum += q; g.rated++; }
+      groups.set(label, g);
+    }
+  }
+  return [...groups.values()]
+    .map(({ sum, rated, ...g }) => ({ ...g, quality: rated ? sum / rated : 0 }))
+    .sort((a, b) => a.order - b.order);
 }
 
 function countBy(runs: Run[], pick: (r: Run) => { key: string; label: string; order?: number } | null): CountGroup[] {

@@ -6,8 +6,8 @@ import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import {
-  applyFilters, bestItems, bossGroups, curseStats, itemPairs, pathStats, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
-  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup, type WinGroup, type CurseGroup, type PairGroup,
+  applyFilters, bestItems, bossGroups, curseStats, dealStats, itemPairs, itemSources, pathStats, qualityByFloor, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
+  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup, type WinGroup, type CurseGroup, type FloorQuality, type PairGroup,
 } from "../stats/stats";
 
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
@@ -120,6 +120,19 @@ function pairTable(groups: PairGroup[]): HTMLElement {
       h("td", { class: "bar-cell" }, bar(g.winRate, percent(g.winRate), "win"))))));
 }
 
+function qualityTable(rows: FloorQuality[]): HTMLElement {
+  if (rows.length === 0) return emptyNote("No items picked up yet.");
+  return h("table", { class: "table" },
+    h("thead", null, h("tr", null,
+      h("th", { scope: "col" }, "Floor"),
+      h("th", { scope: "col", class: "num" }, "Items"),
+      h("th", { scope: "col" }, "Average quality"))),
+    h("tbody", null, rows.map((r) => h("tr", null,
+      h("th", { scope: "row" }, r.label),
+      h("td", { class: "num" }, r.items),
+      h("td", { class: "bar-cell" }, bar(r.quality / 4, `Q${r.quality.toFixed(1)}`, "neutral"))))));
+}
+
 function bossList(groups: ReturnType<typeof bossGroups>): HTMLElement {
   const top = [...groups].sort((a, b) => b.runs - a.runs || a.label.localeCompare(b.label)).slice(0, 8);
   return h("div", null,
@@ -195,6 +208,12 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       card("Best trinkets by win rate",
         bestTrinkets.length ? itemTable(bestTrinkets, "winrate", s.winRate, "Trinket") : emptyNote(`No trinket has been in ${opts.minRuns}+ decided runs yet.`),
         { note: `Trinkets held in at least ${opts.minRuns} decided runs (the same minimum as items).` }),
+      card("Where items come from", countList(itemSources(runs), "neutral", "No items picked up yet."),
+        { note: "Items picked up, by the room they were taken in. Starting items aren't counted." }),
+      card("Devil or angel", winTable(dealStats(runs, opts.countQuits), "Deals taken", "No runs off Greed mode yet."),
+        { note: "Runs by the deals taken: items from a devil room or black market, from an angel room, both or neither." }),
+      card("Item quality by floor", qualityTable(qualityByFloor(runs)),
+        { note: "Items picked up on each floor and their average quality (Q0–Q4, from the game files)." }),
       card("Paths", winTable(pathStats(runs, opts.countQuits), "Route", "No runs off Greed mode yet."),
         { note: "Alt path: runs that went to Downpour, Mines, Mausoleum or Corpse at least once. Greed runs left out." }),
       card("Curses", curseTable(curseStats(runs, opts.countQuits)),
