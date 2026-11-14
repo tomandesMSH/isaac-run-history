@@ -191,6 +191,7 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
     kpi("Enemies killed", totalKills, h("a", { href: "#/bestiary", title: "Open the bestiary" }, `${l.bestiary.length} kinds met →`)),
     kpi("Items collected", col.total ? col.have.length : "–", col.total ? h("a", { href: "#/items", title: "Open the item collection" }, `of ${num(col.total)} · ${percent(col.have.length / col.total)} →`) : undefined),
     kpi("Eden tokens", c.EDEN_TOKENS ?? 0),
+    kpi("Mom kills", c.MOM_KILLS ?? 0, c.PILLS_EATEN ? `${num(c.PILLS_EATEN)} pills eaten` : undefined),
     ach ? kpi("Achievements", ach.unlocked, h("a", { href: "#/achievements", title: "Open the achievements" }, `of ${num(ach.total)} →`))
       : kpi("Achievements", "?", h("a", { href: "#/achievements" }, "needs mod 1.2 →")),
     chal ? kpi("Challenges", chal.done, h("a", { href: "#/challenges", title: "Open the challenges" }, `of ${num(chal.total)} →`))
