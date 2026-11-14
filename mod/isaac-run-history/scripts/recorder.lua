@@ -287,14 +287,15 @@ local function clock(frames)
   return h > 0 and string.format("%d:%02d:%02d", h, m, s % 60) or string.format("%d:%02d", m, s % 60)
 end
 
--- "Azazel: 12 runs - 42% won - best win 18:32 - win streak 2", from the summary (no runs decoded)
+-- "Azazel: 12 runs - won 5 of 12 - best win 18:32 - win streak 2", from the summary (no runs
+-- decoded). No "%": notifications crash on it.
 local function show_record(p)
   local sum = storage.summary
   local c = sum and sum.byCharacter and sum.byCharacter[tostring(p:GetPlayerType())]
   if not (notify and c and (c.runs or 0) > 0) then return end
   local parts = { string.format("%s: %d run%s", names.player(p:GetPlayerType()), c.runs, c.runs == 1 and "" or "s") }
   local decided = (c.wins or 0) + (c.deaths or 0)
-  if decided > 0 then parts[#parts + 1] = string.format("%d%% won", math.floor(100 * (c.wins or 0) / decided + 0.5)) end
+  if decided > 0 then parts[#parts + 1] = string.format("won %d of %d", c.wins or 0, decided) end
   if c.bestWin then parts[#parts + 1] = "best win " .. clock(c.bestWin) end
   if (sum.streak or 0) > 1 then parts[#parts + 1] = "win streak " .. sum.streak end
   notify(table.concat(parts, " - "), 0)

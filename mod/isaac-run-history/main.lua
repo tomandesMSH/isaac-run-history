@@ -8,7 +8,7 @@
 --   scripts/ui.lua        console command and ImGui window
 --   scripts/lifetime.lua  totals from the game's own save (bestiary, marks, collection, counters)
 
-local VERSION = "1.4"
+local VERSION = "1.4.1"
 
 local mod = RegisterMod("Isaac Run History", 1)
 
@@ -38,6 +38,8 @@ end
 
 local function notify(text, kind)
   log(text)
+  -- the notification text goes through a printf-style formatter: a "%" in it crashed the game
+  text = text:gsub("%%", "")
   if ImGui and ImGui.PushNotification then ImGui.PushNotification(wrap(text, 50), kind or 0, 5000) end
 end
 
