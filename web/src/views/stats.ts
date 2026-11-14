@@ -93,7 +93,7 @@ function winTable(groups: WinGroup[], what: string, empty: string): HTMLElement 
 
 function curseTable(groups: CurseGroup[]): HTMLElement {
   if (groups.length === 0) return emptyNote("No cursed floors yet.");
-  return h("table", { class: "table" },
+  return h("div", { class: "scroll-x" }, h("table", { class: "table" },
     h("thead", null, h("tr", null,
       h("th", { scope: "col" }, "Curse"),
       h("th", { scope: "col", class: "num" }, "Floors"),
@@ -103,7 +103,7 @@ function curseTable(groups: CurseGroup[]): HTMLElement {
       h("th", { scope: "row", title: g.label }, g.label.replace(/^Curse of (the )?/, "")),
       h("td", { class: "num" }, g.floors),
       h("td", { class: "num" }, g.deaths),
-      h("td", { class: "bar-cell" }, bar(g.winRate, g.decided ? `${percent(g.winRate)} of ${g.decided}` : "–", "win"))))));
+      h("td", { class: "bar-cell" }, bar(g.winRate, g.decided ? percent(g.winRate) : "–", "win")))))));
 }
 
 function pairTable(groups: PairGroup[]): HTMLElement {
@@ -217,7 +217,7 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       card("Paths", winTable(pathStats(runs, opts.countQuits), "Route", "No runs off Greed mode yet."),
         { note: "Alt path: runs that went to Downpour, Mines, Mausoleum or Corpse at least once. Greed runs left out." }),
       card("Curses", curseTable(curseStats(runs, opts.countQuits)),
-        { note: "Floors with the curse, deaths on such a floor, and the win rate of runs that had it." }),
+        { note: "Floors with the curse, deaths on such a floor, and the win rate of the runs that had it." }),
       card("Winning pairs", pairTable(pairs), { note: `Two items held together in at least ${pairMin} decided runs, best win rate first.` }),
       card("Bosses beaten", bossList(bossGroups(runs, opts.countQuits))),
       card("Causes of death", countList(deathCauses(runs).slice(0, 15), "death", "No deaths. Nice.")),

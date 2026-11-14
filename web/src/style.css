@@ -394,6 +394,14 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
   .bar-cell { min-width: 90px; }
   .table-runs td:nth-child(3), .table-runs th:nth-child(3) { display: none; }
   .kpi { transform: none !important; }
+  .nav { flex-wrap: wrap; gap: 0.3rem; }
+  /* a tall wrapped top bar would cover a third of a phone screen: let it scroll away */
+  .topbar { position: relative; }
+  /* drop-downs open under the whole action row instead of their own button */
+  .actions { position: relative; flex-wrap: wrap; }
+  .actions .menu { position: static; }
+  .actions .menu-list, .actions .music-panel { left: 0; right: 0; min-width: 0; width: auto; }
+  body.has-gfx h1, body.has-gfx .page-head h1 { font-size: calc(var(--up) * 2); overflow-wrap: anywhere; }
 }
 
 /* ---------- music: "▶ MUSIC ////////" like the game's options ---------- */
@@ -476,7 +484,7 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
   --heat-0: rgb(30 15 11 / 0.08); --heat-1: #c9a77a; --heat-2: #a87a4f; --heat-3: #7d4f2e; --heat-4: #4f2f1d; }
 .chart-title { margin: 0.9rem 0 0.2rem; font-size: 1rem; }
 .chart-title:first-child { margin-top: 0; }
-.chart-wrap { overflow-x: auto; }
+.chart-wrap, .scroll-x { overflow-x: auto; }
 .chart { display: block; width: 100%; height: auto; overflow: visible; }
 .heatmap { min-width: 560px; }
 .chart-tick { font-family: var(--pixel); font-size: 11px; fill: var(--ink-muted); }
@@ -562,7 +570,7 @@ a.collect[href]:hover .collect-name { text-decoration: underline; }
 .chal.done { box-shadow: inset 4px 0 0 #4b8f2a; }
 .chal.todo { box-shadow: inset 4px 0 0 var(--title-red); }
 .chal-head { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-.chal-head h3 { margin: 0; flex: 1; min-width: 0; }
+.chal-head h3 { margin: 0; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .chal-num, .chal-meta, .chal-rule-label { color: var(--ink-muted); }
 .chal-rule, .chal-unlocks { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
 .chal-unlock { display: inline-flex; align-items: center; gap: 0.3rem; }
