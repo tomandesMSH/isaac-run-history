@@ -50,7 +50,7 @@ const LABELS: Record<string, string> = {
 
 // The game's other counters, grouped. A tile shows one counter, or the sum of every counter whose
 // name starts with a prefix (Greed coins are counted per character). Zero tiles are left out.
-interface Tile { label: string; icon?: string; keys?: string[]; prefix?: string }
+interface Tile { label: string; icon?: string; item?: number; keys?: string[]; prefix?: string }
 
 const GREED_PER_CHARACTER = "GREED_MODE_COINS_DONATED_WITH_";
 
@@ -93,8 +93,6 @@ const TILE_GROUPS: { title: string; tiles: Tile[] }[] = [
       { label: "XIII - Death cards used", icon: "card", keys: ["XIII_DEATH_CARD_USED"] },
       { label: "Batteries collected", icon: "battery", keys: ["BATTERIES_COLLECTED"] },
       { label: "Chests opened with a key", icon: "key", keys: ["CHESTS_OPENED_WITH_KEY"] },
-      { label: "Blood Clot picked up", keys: ["BLOOD_CLOT_ITEM_AQUIRED"] },
-      { label: "Rubber Cement picked up", keys: ["RUBBER_CEMENT_ITEM_AQUIRED"] },
       { label: "Eden's Blessings for the next run", keys: ["EDENS_BLESSINGS_NEXT_RUN"] },
     ],
   },
@@ -108,6 +106,15 @@ const TILE_GROUPS: { title: string; tiles: Tile[] }[] = [
   },
 ];
 
+// shown last, below Other: the items the game counts pick-ups of, with the item's own sprite
+const ITEM_GROUP = {
+  title: "Items",
+  tiles: [
+    { label: "Blood Clot picked up", item: 254, keys: ["BLOOD_CLOT_ITEM_AQUIRED"] },
+    { label: "Rubber Cement picked up", item: 221, keys: ["RUBBER_CEMENT_ITEM_AQUIRED"] },
+  ] as Tile[],
+};
+
 function tileValue(t: Tile, c: Record<string, number>): number {
   if (t.prefix) return Object.entries(c).filter(([k]) => k.startsWith(t.prefix!)).reduce((a, [, v]) => a + v, 0);
   return (t.keys ?? []).reduce((a, k) => a + (c[k] ?? 0), 0);
@@ -115,17 +122,17 @@ function tileValue(t: Tile, c: Record<string, number>): number {
 
 function tileGroups(c: Record<string, number>): HTMLElement[] {
   const used = new Set<string>(HEADLINE);
-  for (const g of TILE_GROUPS) for (const t of g.tiles) for (const k of t.keys ?? []) used.add(k);
+  for (const g of [...TILE_GROUPS, ITEM_GROUP]) for (const t of g.tiles) for (const k of t.keys ?? []) used.add(k);
   // whatever the game counts that isn't grouped above still shows, under Other
   const other: Tile[] = Object.keys(c)
     .filter((k) => !used.has(k) && !k.startsWith(GREED_PER_CHARACTER))
     .sort((a, b) => label(a).localeCompare(label(b)))
     .map((k) => ({ label: label(k), keys: [k] }));
-  return [...TILE_GROUPS, { title: "Other", tiles: other }].flatMap((g) => {
+  return [...TILE_GROUPS, { title: "Other", tiles: other }, ITEM_GROUP].flatMap((g) => {
     const tiles = g.tiles.map((t) => ({ t, v: tileValue(t, c) })).filter(({ v }) => v > 0);
     if (tiles.length === 0) return [];
     return [card(g.title, h("div", { class: "stat-tiles" }, tiles.map(({ t, v }) => {
-      const icon = uiIcon(t.icon);
+      const icon = t.item !== undefined ? itemInfo(t.item).icon : uiIcon(t.icon);
       return h("div", { class: "stat-tile" },
         icon ? h("img", { class: "stat-tile-icon", src: icon, alt: "" }) : h("span", { class: "stat-tile-icon" }),
         h("div", null, h("div", { class: "stat-tile-value" }, num(v)), h("div", { class: "stat-tile-label" }, t.label)));
