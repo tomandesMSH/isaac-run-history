@@ -292,3 +292,5 @@
 .has-gfx .collection-missing .item { font-size: var(--tm); }
 .has-gfx.no-data .empty { padding-top: 0; padding-bottom: 0; }
 .has-gfx.no-data .empty h1 { font-size: calc(var(--up) * 3); }
+.has-gfx .dialog { padding: 0 10px 14px; }
+.has-gfx .dialog textarea { font-size: 0.9rem; }
