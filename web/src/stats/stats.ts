@@ -4,7 +4,7 @@
 // cut short by a crash don't count unless countQuits is on, then they count as losses.
 
 import { endingName, floorName, floorOrder } from "../data/game";
-import { itemInfo, type ItemInfo } from "../data/items";
+import { itemInfo, trinketInfo, type ItemInfo } from "../data/items";
 import { characterKey, characterName, isGreed, killerName } from "../format";
 import type { Difficulty, Run } from "../model/schema";
 
@@ -25,6 +25,12 @@ export interface WinGroup {
 
 export interface ItemGroup extends WinGroup {
   item: ItemInfo;
+}
+
+export interface TrinketGroup extends ItemGroup {
+  /** runs it was golden in / smelted (swallowed) in */
+  golden: number;
+  smelted: number;
 }
 
 export interface CountGroup {
@@ -122,11 +128,38 @@ export function itemGroups(runs: Run[], countQuits: boolean): ItemGroup[] {
   return finish(groups.values());
 }
 
-export function mostPickedItems(groups: ItemGroup[], limit = 20): ItemGroup[] {
+/** Per trinket: in how many runs it was held (starting ones left out), and how those runs went. */
+export function trinketGroups(runs: Run[], countQuits: boolean): TrinketGroup[] {
+  const groups = new Map<string, TrinketGroup>();
+  for (const r of runs) {
+    const seen = new Map<string, { golden: boolean; smelted: boolean }>();
+    for (const t of r.trinkets) {
+      if (t.starting) continue;
+      const info = trinketInfo(t.id, t.name);
+      const s = seen.get(info.key) ?? { golden: false, smelted: false };
+      s.golden ||= !!t.golden;
+      s.smelted ||= !!t.smelted;
+      if (!seen.has(info.key)) {
+        let g = groups.get(info.key);
+        if (!g) groups.set(info.key, (g = { ...winGroup(info.key, info.name), item: info, golden: 0, smelted: 0 }));
+        addRun(g, r, countQuits);
+      }
+      seen.set(info.key, s);
+    }
+    for (const [key, s] of seen) {
+      const g = groups.get(key)!;
+      if (s.golden) g.golden++;
+      if (s.smelted) g.smelted++;
+    }
+  }
+  return finish(groups.values());
+}
+
+export function mostPickedItems<T extends ItemGroup>(groups: T[], limit = 20): T[] {
   return [...groups].sort((a, b) => b.runs - a.runs || a.label.localeCompare(b.label)).slice(0, limit);
 }
 
-export function bestItems(groups: ItemGroup[], minRuns: number, limit = 20): ItemGroup[] {
+export function bestItems<T extends ItemGroup>(groups: T[], minRuns: number, limit = 20): T[] {
   return groups
     .filter((g) => g.decided >= minRuns)
     .sort((a, b) => b.winRate - a.winRate || b.decided - a.decided)

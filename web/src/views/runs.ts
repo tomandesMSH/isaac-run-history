@@ -1,6 +1,6 @@
 // List of all runs with filters (character, result, difficulty, item).
 
-import { itemInfo } from "../data/items";
+import { itemInfo, trinketInfo } from "../data/items";
 import { clear, emptyNote, h, resultBadge } from "../dom";
 import {
   byNewest, challengeName, characterKey, characterName, dateTime, difficultyName, duration, endFloorName, resultText,
@@ -15,7 +15,7 @@ function matches(run: Run, f: RunFilters): boolean {
   if (f.item) {
     const needle = f.item.toLowerCase();
     const has = run.items.some((i) => itemInfo(i.id, i.name).name.toLowerCase().includes(needle))
-      || run.trinkets.some((t) => (t.name ?? "").toLowerCase().includes(needle));
+      || run.trinkets.some((t) => trinketInfo(t.id, t.name).name.toLowerCase().includes(needle));
     if (!has) return false;
   }
   return true;
@@ -49,6 +49,7 @@ export function renderRuns(allRuns: Run[], initial: RunFilters): HTMLElement {
   }
   const itemNames = new Set<string>();
   for (const r of runs) for (const i of r.items) itemNames.add(itemInfo(i.id, i.name).name);
+  for (const r of runs) for (const t of r.trinkets) itemNames.add(trinketInfo(t.id, t.name).name);
 
   const tbody = h("tbody");
   const count = h("p", { class: "muted", "aria-live": "polite" });
@@ -75,7 +76,7 @@ export function renderRuns(allRuns: Run[], initial: RunFilters): HTMLElement {
     select("char", "Character", [...chars].sort((a, b) => b[1].n - a[1].n).map(([k, c]) => [k, `${c.label} (${c.n})`])),
     select("result", "Result", [["win", "Win"], ["death", "Death"], ["quit", "Quit"], ["unknown", "Unknown"]]),
     select("difficulty", "Difficulty", [["normal", "Normal"], ["hard", "Hard"], ["greed", "Greed"], ["greedier", "Greedier"]]),
-    h("label", null, "Item ", itemInput),
+    h("label", null, "Item or trinket ", itemInput),
     h("datalist", { id: "item-names" }, [...itemNames].sort().map((n) => h("option", { value: n }))));
 
   const table = h("div", { class: "table-wrap" }, h("table", { class: "table table-runs" },

@@ -6,8 +6,8 @@ import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import {
-  applyFilters, bestItems, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary,
-  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions,
+  applyFilters, bestItems, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
+  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup,
 } from "../stats/stats";
 
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
@@ -36,16 +36,22 @@ export function countList(groups: CountGroup[], kind: "death" | "neutral" | "win
         h("td", { class: "bar-cell" }, bar(g.count / max, percent(g.count / total), kind))))));
 }
 
-export function itemTable(groups: ItemGroup[], mode: "count" | "winrate", baseline: number): HTMLElement {
+// trinket groups get golden / smelted badges
+function badges(g: ItemGroup): string[] {
+  const t = g as Partial<TrinketGroup>;
+  return [...(t.golden ? [`golden ${t.golden}×`] : []), ...(t.smelted ? [`smelted ${t.smelted}×`] : [])];
+}
+
+export function itemTable(groups: ItemGroup[], mode: "count" | "winrate", baseline: number, what = "Item"): HTMLElement {
   return h("table", { class: "table" },
     h("thead", null, h("tr", null,
-      h("th", { scope: "col" }, "Item"),
+      h("th", { scope: "col" }, what),
       h("th", { scope: "col", class: "num" }, mode === "count" ? "Runs" : "Won"),
       h("th", { scope: "col" }, "Win rate"))),
     h("tbody", null, groups.map((g) => {
       const diff = g.winRate - baseline;
       return h("tr", null,
-        h("th", { scope: "row" }, itemChip(g.item, { href: runsLink({ item: g.item.name }) })),
+        h("th", { scope: "row" }, itemChip(g.item, { href: runsLink({ item: g.item.name }), badges: badges(g) })),
         h("td", { class: "num" }, mode === "count" ? g.runs : `${g.wins}/${g.decided}`),
         h("td", { class: "bar-cell" }, bar(g.winRate,
           g.decided ? `${percent(g.winRate)}${mode === "winrate" ? ` (${diff >= 0 ? "+" : ""}${Math.round(diff * 100)})` : ""}` : "–", "win")));
@@ -111,6 +117,9 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
   });
   const best = bestItems(items, opts.minRuns);
   const most = mostPickedItems(items);
+  const trinkets = trinketGroups(runs, opts.countQuits);
+  const mostTrinkets = mostPickedItems(trinkets, 15);
+  const bestTrinkets = bestItems(trinkets, opts.minRuns, 15);
 
   return h("div", { class: "page" },
     h("div", { class: "page-head" }, h("h1", null, "Statistics"), controls),
@@ -127,6 +136,11 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       card("Best items by win rate",
         best.length ? itemTable(best, "winrate", s.winRate) : emptyNote(`No item has been in ${opts.minRuns}+ decided runs yet.`),
         { note: h("span", null, "Items picked up in at least ", minInput, " decided runs. In brackets: difference from your overall win rate.") }),
+      card("Most held trinkets", mostTrinkets.length ? itemTable(mostTrinkets, "count", s.winRate, "Trinket") : emptyNote("No trinkets picked up yet."),
+        { note: "Runs the trinket was held or smelted in. Starting trinkets aren't counted." }),
+      card("Best trinkets by win rate",
+        bestTrinkets.length ? itemTable(bestTrinkets, "winrate", s.winRate, "Trinket") : emptyNote(`No trinket has been in ${opts.minRuns}+ decided runs yet.`),
+        { note: `Trinkets held in at least ${opts.minRuns} decided runs (the same minimum as items).` }),
       card("Causes of death", countList(deathCauses(runs).slice(0, 15), "death", "No deaths. Nice.")),
       card("Floor of death", countList(deathFloors(runs), "death", "No deaths. Nice."))));
 }

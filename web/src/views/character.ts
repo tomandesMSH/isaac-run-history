@@ -6,7 +6,7 @@ import { card, emptyNote, h } from "../dom";
 import { characterKey, characterName, duration, percent } from "../format";
 import type { Lifetime, Run } from "../model/schema";
 import { runsLink } from "../router";
-import { deathCauses, endings, itemGroups, mostPickedItems, records, summary } from "../stats/stats";
+import { deathCauses, endings, itemGroups, mostPickedItems, records, summary, trinketGroups } from "../stats/stats";
 import { characterLabel, marksNote, markValues, MARK_COLUMNS } from "./marks";
 import { countList, itemTable, kpi, recordTiles } from "./stats";
 
@@ -44,6 +44,7 @@ export function renderCharacter(key: string, allRuns: Run[], lifetimes: Lifetime
 
   const s = summary(runs, countQuits);
   const items = mostPickedItems(itemGroups(runs, countQuits), 10);
+  const trinkets = mostPickedItems(trinketGroups(runs, countQuits), 10);
   const kpis = h("div", { class: "kpis" },
     kpi("Runs", [s.total, (n) => String(Math.round(n))], `${s.wins} won · ${s.deaths} died · ${s.quits} quit`),
     kpi("Win rate", s.wins + s.deaths > 0 || countQuits ? [s.winRate, percent] : "–", countQuits ? "quits count as losses" : "wins / (wins + deaths)"),
@@ -57,6 +58,7 @@ export function renderCharacter(key: string, allRuns: Run[], lifetimes: Lifetime
     h("div", { class: "grid" },
       marksCard(marks),
       card("Most picked items", items.length ? itemTable(items, "count", s.winRate) : emptyNote("No items picked up yet.")),
+      card("Most held trinkets", trinkets.length ? itemTable(trinkets, "count", s.winRate, "Trinket") : emptyNote("No trinkets picked up yet.")),
       card("Endings", countList(endings(runs), "win", "No wins yet.")),
       card("Causes of death", countList(deathCauses(runs).slice(0, 10), "death", "No deaths. Nice."))));
 }
