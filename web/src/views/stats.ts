@@ -1,6 +1,6 @@
 // Statistics page.
 
-import { bar, card, emptyNote, h, itemChip } from "../dom";
+import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
 import { duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
@@ -11,10 +11,14 @@ import {
 
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
 
-function kpi(label: string, value: string, sub?: string): HTMLElement {
+// value: text as is, or a number that counts up shown through fmt
+function kpi(label: string, value: string | [number, (n: number) => string], sub?: string): HTMLElement {
+  const v = h("div", { class: "kpi-value" });
+  if (typeof value === "string") v.textContent = value;
+  else countUp(v, value[0], value[1]);
   return h("div", { class: "kpi" },
     h("div", { class: "kpi-label" }, label),
-    h("div", { class: "kpi-value" }, value),
+    v,
     sub ? h("div", { class: "kpi-sub" }, sub) : null);
 }
 
@@ -61,12 +65,12 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       " Count quits as losses"));
 
   const kpis = h("div", { class: "kpis" },
-    kpi("Runs", String(s.total), `${s.wins} won · ${s.deaths} died · ${s.quits} quit`),
-    kpi("Win rate", s.wins + s.deaths > 0 || opts.countQuits ? percent(s.winRate) : "–", opts.countQuits ? "quits count as losses" : "wins / (wins + deaths)"),
-    kpi("Average run", s.avgDuration !== undefined ? duration(s.avgDuration) : "–", "wins and deaths, in-game time"),
-    kpi("Average win", s.avgWinDuration !== undefined ? duration(s.avgWinDuration) : "–",
+    kpi("Runs", [s.total, (n) => String(Math.round(n))], `${s.wins} won · ${s.deaths} died · ${s.quits} quit`),
+    kpi("Win rate", s.wins + s.deaths > 0 || opts.countQuits ? [s.winRate, percent] : "–", opts.countQuits ? "quits count as losses" : "wins / (wins + deaths)"),
+    kpi("Average run", s.avgDuration !== undefined ? [s.avgDuration, duration] : "–", "wins and deaths, in-game time"),
+    kpi("Average win", s.avgWinDuration !== undefined ? [s.avgWinDuration, duration] : "–",
       s.avgDeathDuration !== undefined ? `death after ${duration(s.avgDeathDuration)}` : undefined),
-    kpi("Items per run", s.avgItems !== undefined ? s.avgItems.toFixed(1) : "–", "picked up, starting items not counted"));
+    kpi("Items per run", s.avgItems !== undefined ? [s.avgItems, (n) => n.toFixed(1)] : "–", "picked up, starting items not counted"));
 
   const chars = winRateByCharacter(runs, opts.countQuits);
   const charTable = chars.length === 0 ? emptyNote("No runs.") : h("table", { class: "table" },

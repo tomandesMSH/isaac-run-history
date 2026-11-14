@@ -83,3 +83,20 @@ export function copyButton(text: string, label = "Copy"): HTMLButtonElement {
   });
   return btn;
 }
+
+/** Counts a number up from 0 in `el` (ease-out, ~1.2 s), shown through `fmt`; skipped when the
+ *  viewer prefers reduced motion. */
+export function countUp(el: HTMLElement, to: number, fmt: (n: number) => string = (n) => Math.round(n).toLocaleString()): void {
+  el.textContent = fmt(to);
+  if (to <= 0 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ms = 1200;
+  let start: number | undefined;
+  const step = (t: number) => {
+    start ??= t;
+    const p = Math.min(1, (t - start) / ms);
+    el.textContent = fmt(p < 1 ? to * (1 - (1 - p) ** 3) : to);
+    if (p < 1 && (el.isConnected || t - start < 100)) requestAnimationFrame(step);
+  };
+  el.textContent = fmt(0);
+  requestAnimationFrame(step);
+}

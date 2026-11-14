@@ -3,7 +3,7 @@
 
 import { CHARACTERS } from "../data/game";
 import { itemInfo, uiIcon } from "../data/items";
-import { bar, card, emptyNote, h, itemChip } from "../dom";
+import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
 import { dateTime, percent } from "../format";
 import type { Lifetime } from "../model/schema";
 
@@ -152,25 +152,9 @@ function num(n: number | undefined): string {
   return (n ?? 0).toLocaleString();
 }
 
-// A headline number counts up from 0 when the page shows (ease-out, ~1.2 s), unless the viewer
-// asked for reduced motion.
-function countUp(el: HTMLElement, to: number): void {
-  if (to <= 0 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const ms = 1200;
-  let start: number | undefined;
-  const step = (t: number) => {
-    start ??= t;
-    const p = Math.min(1, (t - start) / ms);
-    el.textContent = num(Math.round(to * (1 - (1 - p) ** 3)));
-    if (p < 1 && (el.isConnected || t - start < 100)) requestAnimationFrame(step);
-  };
-  el.textContent = num(0);
-  requestAnimationFrame(step);
-}
-
 function kpi(title: string, value: string | number, sub?: string): HTMLElement {
   const v = h("div", { class: "kpi-value" }, typeof value === "number" ? num(value) : value);
-  if (typeof value === "number") countUp(v, value);
+  if (typeof value === "number") countUp(v, value, (n) => num(Math.round(n)));
   return h("div", { class: "kpi" },
     h("div", { class: "kpi-label" }, title),
     v,
