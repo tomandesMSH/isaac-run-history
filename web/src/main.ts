@@ -12,6 +12,7 @@ import { clearRuns, deleteRun, loadLifetimes, loadRuns, saveLifetime, saveRuns }
 import { defaultStatsOptions, renderStats } from "./views/stats";
 import { renderRuns } from "./views/runs";
 import { renderRun } from "./views/run";
+import { renderAchievements } from "./views/achievements";
 import { renderBestiary } from "./views/bestiary";
 import { renderCharacter } from "./views/character";
 import { renderItems } from "./views/items";
@@ -172,7 +173,7 @@ function render(): void {
   const hasData = state.runs.length > 0 || state.lifetimes.length > 0;
   document.body.classList.toggle("no-data", !hasData);
   const route = parseRoute(location.hash);
-  setActiveNav(route.name === "run" ? "runs" : route.name === "bestiary" || route.name === "items" ? "lifetime" : route.name === "character" ? "stats" : route.name);
+  setActiveNav(route.name === "run" ? "runs" : route.name === "bestiary" || route.name === "items" || route.name === "achievements" ? "lifetime" : route.name === "character" ? "stats" : route.name);
 
   if (!hasData) {
     clear(main, emptyState());
@@ -190,6 +191,10 @@ function render(): void {
       break;
     case "character":
       clear(main, renderCharacter(route.key, state.runs, state.lifetimes, state.lifetimeSlot, state.statsOptions.countQuits));
+      window.scrollTo(0, 0);
+      break;
+    case "achievements":
+      clear(main, renderAchievements(state.lifetimes, state.lifetimeSlot));
       window.scrollTo(0, 0);
       break;
     case "items":

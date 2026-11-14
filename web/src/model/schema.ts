@@ -79,6 +79,8 @@ export interface Lifetime {
   marks: { id: number; name?: string; marks: Record<string, number> }[];
   bestiary: { type: number; variant: number; name?: string; kills: number; deaths: number; encounters: number }[];
   collection: { total: number; have: number[]; missing: { id: number; name?: string }[] };
+  /** Unlocked achievement ids; missing in exports from mod versions before 1.2. */
+  achievements?: number[];
 }
 
 export interface ParsedExport {
@@ -104,6 +106,7 @@ function normalizeLifetime(raw: unknown, saveSlot?: number): Lifetime | undefine
       have: arr<number>(col.have),
       missing: arr<{ id: number; name?: string }>(col.missing),
     },
+    achievements: l.achievements === undefined ? undefined : arr<number>(l.achievements),
   };
 }
 

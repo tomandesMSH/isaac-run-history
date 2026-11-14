@@ -555,3 +555,15 @@ a.collect[href]:hover .collect-name { text-decoration: underline; }
 .quality { font-weight: 700; }
 .quality.q4 { color: var(--title-red); } .quality.q3 { color: var(--brown-dark); }
 .card .collect-grid a.collect, .card .marks-notes a.marks-card { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
+
+/* ---------- achievements ---------- */
+
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(263px, 1fr)); gap: 1rem 0.8rem; justify-items: center; }
+.ach { width: 263px; max-width: 100%; text-align: center; }
+.ach-img { display: block; width: 263px; max-width: 100%; height: auto; image-rendering: pixelated; }
+.ach-name { font-weight: 700; line-height: 1.15; margin-top: 0.2rem; }
+.ach-how { color: var(--ink-muted); font-size: 0.85rem; line-height: 1.2; }
+.ach-lock { color: var(--ink-muted); font-weight: 400; }
+.ach.locked .ach-img { filter: grayscale(1) brightness(0.7); opacity: 0.35; }
+.ach.locked .ach-name { color: var(--ink-muted); }
+.kpi .kpi-sub a { color: var(--title-red); }

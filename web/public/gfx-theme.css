@@ -311,3 +311,5 @@
 }
 .has-gfx .collect-name { font-weight: 400; }
 .has-gfx .collect-meta, .has-gfx .collect-missing { font-size: var(--tm); line-height: 0.9; }
+.has-gfx .ach-name { font-weight: 400; }
+.has-gfx .ach-how { font-size: var(--tm); line-height: 0.95; }

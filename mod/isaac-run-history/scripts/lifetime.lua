@@ -88,6 +88,18 @@ local function collection(pgd)
   return { total = total, have = have, missing = missing }
 end
 
+-- The ids of every unlocked achievement. The last id is the game's Achievement.NUM_ACHIEVEMENTS - 1
+-- when the enum has it, else 641 (the highest id in achievements.xml for Repentance+).
+local function achievements(pgd)
+  local last = (Achievement and Achievement.NUM_ACHIEVEMENTS and Achievement.NUM_ACHIEVEMENTS - 1) or 641
+  local out = {}
+  for id = 1, last do
+    local ok, got = pcall(pgd.Unlocked, pgd, id)
+    if ok and got then out[#out + 1] = id end
+  end
+  return out
+end
+
 -- Everything at once; nil when the save can't be read yet (before the game has initialised).
 function lifetime.collect()
   local ok, pgd = pcall(Isaac.GetPersistentGameData)
@@ -99,6 +111,7 @@ function lifetime.collect()
       marks = marks(),
       bestiary = bestiary(pgd),
       collection = collection(pgd),
+      achievements = achievements(pgd),
     }
   end)
   if not okAll then

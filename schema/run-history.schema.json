@@ -140,6 +140,13 @@
                   }
                 }
               }
+            },
+            "achievements": {
+              "type": "array",
+              "description": "ids of the unlocked achievements (mod 1.2+)",
+              "items": {
+                "type": "integer"
+              }
             }
           }
         }

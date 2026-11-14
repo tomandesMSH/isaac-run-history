@@ -650,6 +650,47 @@ def write_items_web(res: Path) -> int:
     return len(items)
 
 
+# The page's achievements: every achievement with its picture (the game's paper), the unlock text,
+# and how to get it (the XML comment above each entry, else Steam's description).
+ACHIEVEMENTS_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "achievements.json"
+
+
+def write_achievements_web(res: Path) -> int:
+    xml = (res / "achievements.xml").read_text(encoding="utf-8", errors="replace")
+    src = res / "gfx" / "ui" / "achievement"
+    files = {f.name.lower(): f for f in src.iterdir()}
+    out = OUT / "achievements"
+    out.mkdir(parents=True, exist_ok=True)
+    entries = []
+    comment = None
+    for m in re.finditer(r"<!--(.*?)-->|<achievement\s([^>]*)/?>", xml, re.S):
+        if m.group(1) is not None:
+            comment = " ".join(m.group(1).split())
+            continue
+        # attribute values are in double or single quotes (text='You unlocked "Cain"')
+        a = {k: html.unescape(v1 or v2) for k, v1, v2 in re.findall(r"""(\w+)=(?:"([^"]*)"|'([^']*)')""", m.group(2))}
+        how, comment = comment, None
+        if "id" not in a:
+            continue
+        i = int(a["id"])
+        steam = a.get("steam_description", "")
+        if not how and steam and steam != "???":
+            how = steam
+        text = a.get("text", "")
+        quoted = re.search(r'"([^"]+)"', text)  # 'You unlocked "Cain"' -> Cain
+        e = {"id": i, "name": a.get("steam_name") or (quoted.group(1) if quoted else text) or f"#{i}", "text": text}
+        if how:
+            e["how"] = how[0].upper() + how[1:]
+        f = files.get(a.get("gfx", "").lower())
+        if f:
+            Image.open(f).convert("RGBA").save(out / f"{i}.png", optimize=True)
+            e["img"] = True
+        entries.append(e)
+    entries.sort(key=lambda e: e["id"])
+    ACHIEVEMENTS_JSON.write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return len(entries)
+
+
 # The page's bestiary: the full list (bundled into the page, so names work without graphics) and
 # the death screen's ink portraits, 64x48 cells: enemies 16 per row, bosses 7 per row.
 BESTIARY_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "bestiary.json"
@@ -789,6 +830,7 @@ def main() -> None:
     print(f"bestiary ids for the mod: {write_bestiary_ids(res)}")
     print(f"bestiary for the page: {write_bestiary_web(res)}")
     print(f"items for the page: {write_items_web(res)}")
+    print(f"achievements for the page: {write_achievements_web(res)}")
 
     (OUT / "manifest.json").write_text(json.dumps({
         "version": 2,
