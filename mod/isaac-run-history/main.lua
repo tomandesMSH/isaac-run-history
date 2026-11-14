@@ -8,7 +8,7 @@
 --   scripts/ui.lua        console command and ImGui window
 --   scripts/lifetime.lua  totals from the game's own save (bestiary, marks, collection, counters)
 
-local VERSION = "1.3"
+local VERSION = "1.3.1"
 
 local mod = RegisterMod("Isaac Run History", 1)
 

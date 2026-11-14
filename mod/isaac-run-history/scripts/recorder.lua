@@ -199,9 +199,10 @@ local function mark_smelted()
   end
 end
 
-local function checkpoint()
+-- refresh: read the lifetime stats from the game too (only when a run ends or the game is left)
+local function checkpoint(refresh)
   storage.current = cur
-  storage.save()
+  storage.save(refresh)
 end
 
 -- File run in the history. live = the player of this run is still around to read from.
@@ -228,12 +229,12 @@ local function finalize(run, kind, opts)
   for _, it in ipairs(run.items) do if not it.starting then picked = picked + 1 end end
   if (kind == "quit" or kind == "unknown") and (run.durationFrames or 0) < MIN_FRAMES and picked == 0 then
     log("dropped a " .. kind .. " run that lasted " .. tostring(run.durationFrames) .. " frames")
-    storage.save()
+    storage.save(true)
     return
   end
 
   storage.add_run(run)
-  storage.save()
+  storage.save(true)
   log(string.format("recorded run %s: %s%s", run.id, kind, opts.ending and (" (" .. opts.ending .. ")") or ""))
   if notify then
     local what = kind == "win" and ("win, " .. (opts.ending or "?")) or kind
@@ -322,7 +323,7 @@ local function on_game_exit(_, shouldSave)
       mark_smelted()
       cur.savedAndQuit = true
       cur.lastSeenAt = now_iso()
-      checkpoint()
+      checkpoint(true)
     else
       finalize(cur, "quit", { live = true })
     end

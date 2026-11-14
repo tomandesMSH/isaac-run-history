@@ -79,10 +79,7 @@ local function detail(i)
 end
 
 local function export()
-  if storage.collectLifetime then
-    local ok, life = pcall(storage.collectLifetime)
-    if ok and life then storage.lifetime = life end
-  end
+  storage.refreshLifetime()
   local data = storage.serialize()
   local ok = Isaac.SetClipboard and Isaac.SetClipboard(data)
   if ok == false then return "Couldn't copy to the clipboard. Upload the file instead: " .. storage.file_path() end
