@@ -107,6 +107,8 @@ local function diag()
     for _ in pairs(life.counters) do nc = nc + 1 end
     t[#t + 1] = string.format("lifetime: %d counters, %d characters with marks, %d bestiary entries, %d/%d items collected",
       nc, #life.marks, #life.bestiary, #life.collection.have, life.collection.total)
+    t[#t + 1] = "achievements: " .. (life.achievements and (#life.achievements .. " unlocked") or "not readable")
+      .. "   challenges: " .. (life.challenges and (#life.challenges .. " finished") or "not readable")
   else
     t[#t + 1] = "lifetime: not readable yet"
   end

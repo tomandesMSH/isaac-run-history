@@ -90,14 +90,17 @@ end
 
 -- The ids of every unlocked achievement. The last id is the game's Achievement.NUM_ACHIEVEMENTS - 1
 -- when the enum has it, else 641 (the highest id in achievements.xml for Repentance+).
+-- nil when the game never answered (no such function): the page then says it doesn't know,
+-- instead of showing nothing unlocked.
 local function achievements(pgd)
   local last = (Achievement and Achievement.NUM_ACHIEVEMENTS and Achievement.NUM_ACHIEVEMENTS - 1) or 641
-  local out = {}
+  local out, answered = {}, false
   for id = 1, last do
-    local ok, got = pcall(pgd.Unlocked, pgd, id)
+    local ok, got = pcall(function() return pgd:Unlocked(id) end)
+    answered = answered or ok
     if ok and got then out[#out + 1] = id end
   end
-  return out
+  return answered and out or nil
 end
 
 -- The ids of every finished challenge. REPENTOGON has PersistentGameData:IsChallengeCompleted and
@@ -105,13 +108,14 @@ end
 -- the enum has it, else 45 (the highest id in challenges.xml for Repentance+).
 local function challenges(pgd)
   local last = (Challenge and Challenge.NUM_CHALLENGES and Challenge.NUM_CHALLENGES - 1) or 45
-  local out = {}
+  local out, answered = {}, false
   for id = 1, last do
     local ok, done = pcall(function() return pgd:IsChallengeCompleted(id) end)
     if not ok then ok, done = pcall(function() return Isaac.IsChallengeDone(id) end) end
+    answered = answered or ok
     if ok and done then out[#out + 1] = id end
   end
-  return out
+  return answered and out or nil
 end
 
 -- Everything at once; nil when the save can't be read yet (before the game has initialised).
