@@ -9,6 +9,7 @@ import { setupBackgrounds } from "./background";
 import { setupMusic, type MusicManifest } from "./music";
 import musicManifest from "./data/music-manifest.json";
 import { clearRuns, deleteRun, loadLifetimes, loadRuns, saveLifetime, saveRuns } from "./storage/db";
+import { allowFolder, connectedFolder, folderReady, folderSupported, forgetFolder, pickFolder, readFolder } from "./storage/folder";
 import { defaultStatsOptions, renderStats } from "./views/stats";
 import { renderRuns } from "./views/runs";
 import { renderRun } from "./views/run";
@@ -40,11 +41,12 @@ function toast(text: string, kind: "ok" | "error" = "ok"): void {
 // Import
 // ------------------------------------------------------------------------------------------------
 
-async function importText(text: string, source: string): Promise<void> {
+/** quiet: a background read of the connected folder, only new runs are worth a message. */
+async function importText(text: string, source: string, quiet = false): Promise<void> {
   try {
     const parsed = parseExport(text);
     if (parsed.runs.length === 0 && !parsed.lifetime) {
-      toast(`${source}: no finished runs in it yet.`, "error");
+      if (!quiet) toast(`${source}: no finished runs in it yet.`, "error");
       return;
     }
     const { added, updated } = await saveRuns(parsed.runs);
@@ -56,12 +58,56 @@ async function importText(text: string, source: string): Promise<void> {
       state.lifetimeSlot = parsed.lifetime.slot;
     }
     const slot = parsed.saveSlot ? ` (save slot ${parsed.saveSlot})` : "";
-    toast(`${source}${slot}: ${added} new run${added === 1 ? "" : "s"}${updated ? `, ${updated} already here` : ""}${life}.`);
+    if (!quiet || added) toast(`${source}${slot}: ${added} new run${added === 1 ? "" : "s"}${updated ? `, ${updated} already here` : ""}${life}.`);
     render();
   } catch (e) {
     toast(`${source}: ${(e as Error).message}`, "error");
   }
 }
+
+// ------------------------------------------------------------------------------------------------
+// Connected history folder: read again on every visit and whenever the tab comes back into view
+// ------------------------------------------------------------------------------------------------
+
+const folderButton = document.getElementById("btn-folder") as HTMLButtonElement;
+const forgetButton = document.getElementById("btn-forget-folder") as HTMLButtonElement;
+
+async function syncFolder(quiet: boolean, force = false): Promise<void> {
+  const files = await readFolder(force);
+  if (!files.length && !quiet) toast("No save1.dat / save2.dat / save3.dat in that folder. Pick data/isaac-run-history in the game folder.", "error");
+  for (const f of files) await importText(f.text, f.name, quiet);
+}
+
+async function updateFolderButton(): Promise<void> {
+  const h = await connectedFolder();
+  folderButton.hidden = !folderSupported;
+  forgetButton.hidden = !h;
+  folderButton.textContent = h ? "Sync folder" : "Connect folder";
+  folderButton.title = h ? `Read ${h.name} again` : "Pick the mod's history folder once; the page reads it on every visit";
+}
+
+async function connectOrSync(): Promise<void> {
+  try {
+    if (await connectedFolder()) {
+      if (!(await allowFolder())) return;
+      await syncFolder(false, true);
+    } else {
+      if (!(await pickFolder())) return;
+      await updateFolderButton();
+      await syncFolder(false, true);
+    }
+  } catch (e) {
+    toast(`Folder: ${(e as Error).message}`, "error");
+  }
+}
+
+folderButton.addEventListener("click", () => void connectOrSync());
+forgetButton.addEventListener("click", () => {
+  void forgetFolder().then(updateFolderButton).then(() => toast("Folder disconnected. Runs already here stay."));
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void folderReady().then((ok) => (ok ? syncFolder(true) : undefined)).catch(() => undefined);
+});
 
 async function importFiles(files: FileList | File[]): Promise<void> {
   for (const f of Array.from(files)) await importText(await f.text(), f.name);
@@ -153,6 +199,9 @@ function emptyState(): HTMLElement {
     h("button", { class: "dropzone", type: "button", onClick: openFilePicker },
       h("strong", null, "Drop your history file here"),
       h("span", null, "save1.dat (or save2 / save3), or click to choose it")),
+    folderSupported ? h("p", null, "Or ",
+      h("button", { class: "link", type: "button", onClick: () => void connectOrSync() }, "connect the folder"),
+      " (paste the path above into the folder picker) and new runs show up on every visit.") : null,
     h("p", null, "No file at hand? Type ", h("code", null, "rh export"), " in the game's console and ",
       h("button", { class: "link", type: "button", onClick: openPaste }, "paste it here"), "."),
     h("p", { class: "muted small" }, "Needs the Isaac Run History mod (Repentance+ with REPENTOGON). ",
@@ -249,4 +298,8 @@ Promise.all([
   loadRuns().then((runs) => { state.runs = runs; }).catch((e: Error) => { state.dbError = e.message; }),
   loadLifetimes().then((l) => { state.lifetimes = l; }).catch(() => undefined),
   loadMusic().then(loadGameGraphics),
-]).finally(render);
+]).finally(() => {
+  render();
+  void updateFolderButton();
+  void folderReady().then((ok) => (ok ? syncFolder(true) : undefined)).catch(() => undefined);
+});

@@ -6,6 +6,7 @@ import type { Lifetime, Run } from "../model/schema";
 const DB_NAME = "isaac-run-history";
 const STORE = "runs";
 const LIFETIME = "lifetime"; // one record per save slot, keyed by slot
+const HANDLES = "handles"; // the connected history folder (FileSystemDirectoryHandle), key "history"
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -16,11 +17,12 @@ function open(): Promise<IDBDatabase> {
         reject(new Error("This browser has no IndexedDB, runs can't be kept between visits."));
         return;
       }
-      const req = indexedDB.open(DB_NAME, 2);
+      const req = indexedDB.open(DB_NAME, 3);
       req.onupgradeneeded = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: "id" });
         if (!db.objectStoreNames.contains(LIFETIME)) db.createObjectStore(LIFETIME, { keyPath: "slot" });
+        if (!db.objectStoreNames.contains(HANDLES)) db.createObjectStore(HANDLES);
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error ?? new Error("Couldn't open the browser database."));
@@ -97,4 +99,23 @@ export async function saveLifetime(l: Lifetime): Promise<boolean> {
   tx.objectStore(LIFETIME).put(l);
   await done(tx);
   return true;
+}
+
+/** The folder handle the user connected, or undefined. */
+export async function loadHandle(): Promise<FileSystemDirectoryHandle | undefined> {
+  const db = await open();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(HANDLES, "readonly").objectStore(HANDLES).get("history");
+    req.onsuccess = () => resolve(req.result as FileSystemDirectoryHandle | undefined);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/** Remember (or with undefined, forget) the connected history folder. */
+export async function saveHandle(handle: FileSystemDirectoryHandle | undefined): Promise<void> {
+  const db = await open();
+  const tx = db.transaction(HANDLES, "readwrite");
+  if (handle) tx.objectStore(HANDLES).put(handle, "history");
+  else tx.objectStore(HANDLES).delete("history");
+  await done(tx);
 }
