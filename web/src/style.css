@@ -498,3 +498,17 @@ i.heat-0 { background: var(--heat-0); } i.heat-1 { background: var(--heat-1); } 
 i.heat-3 { background: var(--heat-3); } i.heat-4 { background: var(--heat-4); }
 .heat-legend { justify-content: flex-end; gap: 3px; margin-top: 0.3rem; }
 .run-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start; }
+
+/* ---------- bestiary ---------- */
+
+.beast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem 0.8rem; }
+.beast { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.beast-portrait { width: 128px; height: 96px; background-repeat: no-repeat; image-rendering: pixelated; }
+.beast-portrait.empty { height: 0.5rem; }
+.beast-name { font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.beast.boss .beast-name { color: var(--title-red); }
+.beast-counts { display: flex; flex-direction: column; color: var(--ink-muted); font-size: 0.8rem; line-height: 1.2; }
+.beast-deaths { color: var(--red); }
+.beast.unmet .beast-portrait { opacity: 0.22; }
+.beast.unmet .beast-name { color: var(--ink-muted); }
+.input-search { min-width: 10rem; }

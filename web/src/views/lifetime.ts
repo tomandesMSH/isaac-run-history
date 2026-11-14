@@ -152,7 +152,7 @@ function num(n: number | undefined): string {
   return (n ?? 0).toLocaleString();
 }
 
-function kpi(title: string, value: string | number, sub?: string): HTMLElement {
+function kpi(title: string, value: string | number, sub?: string | Node): HTMLElement {
   const text = typeof value === "number" ? num(value) : value;
   const v = h("div", { class: text.length >= 6 ? "kpi-value long" : "kpi-value" }, text);
   if (typeof value === "number") countUp(v, value, (n) => num(Math.round(n)));
@@ -228,7 +228,7 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
   const kpis = h("div", { class: "kpis" },
     kpi("Deaths", c.DEATHS ?? 0, `${num(totalBestiaryDeaths)} of them to enemies`),
     kpi("Best streak", c.BEST_STREAK ?? 0, `current: ${num(c.STREAK_COUNTER)}${c.NEGATIVE_STREAK_COUNTER ? `, losing: ${num(c.NEGATIVE_STREAK_COUNTER)}` : ""}`),
-    kpi("Enemies killed", totalKills, `${l.bestiary.length} kinds met`),
+    kpi("Enemies killed", totalKills, h("a", { href: "#/bestiary", title: "Open the bestiary" }, `${l.bestiary.length} kinds met →`)),
     kpi("Items collected", col.total ? col.have.length : "–", col.total ? `of ${num(col.total)} · ${percent(col.have.length / col.total)}` : undefined),
     kpi("Eden tokens", c.EDEN_TOKENS ?? 0));
 

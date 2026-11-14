@@ -12,6 +12,7 @@ import { clearRuns, deleteRun, loadLifetimes, loadRuns, saveLifetime, saveRuns }
 import { defaultStatsOptions, renderStats } from "./views/stats";
 import { renderRuns } from "./views/runs";
 import { renderRun } from "./views/run";
+import { renderBestiary } from "./views/bestiary";
 import { renderLifetime } from "./views/lifetime";
 
 const state = {
@@ -169,7 +170,7 @@ function render(): void {
   const hasData = state.runs.length > 0 || state.lifetimes.length > 0;
   document.body.classList.toggle("no-data", !hasData);
   const route = parseRoute(location.hash);
-  setActiveNav(route.name === "run" ? "runs" : route.name);
+  setActiveNav(route.name === "run" ? "runs" : route.name === "bestiary" ? "lifetime" : route.name);
 
   if (!hasData) {
     clear(main, emptyState());
@@ -184,6 +185,10 @@ function render(): void {
       break;
     case "lifetime":
       clear(main, renderLifetime(state.lifetimes, state.lifetimeSlot, (slot) => { state.lifetimeSlot = slot; render(); }));
+      break;
+    case "bestiary":
+      clear(main, renderBestiary(state.lifetimes, state.lifetimeSlot));
+      window.scrollTo(0, 0);
       break;
     case "run":
       clear(main, renderRun(state.runs.find((r) => r.id === route.id), async (run) => {

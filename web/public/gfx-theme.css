@@ -300,3 +300,5 @@
 .has-gfx .chart-title { font-size: var(--up); }
 .has-gfx .chart-title .muted { font-family: var(--pixel); font-size: var(--tm); text-transform: none; }
 .has-gfx .chart-legend { font-size: var(--tm); }
+.has-gfx .beast-name { font-weight: 400; }
+.has-gfx .beast-counts { font-size: var(--tm); line-height: 0.9; }

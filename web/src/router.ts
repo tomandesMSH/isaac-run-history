@@ -10,6 +10,7 @@ export interface RunFilters {
 export type Route =
   | { name: "stats" }
   | { name: "lifetime" }
+  | { name: "bestiary" }
   | { name: "runs"; filters: RunFilters }
   | { name: "run"; id: string };
 
@@ -20,6 +21,7 @@ export function parseRoute(hash: string): Route {
   const parts = path.split("/");
   if (parts[0] === "run" && parts[1]) return { name: "run", id: decodeURIComponent(parts[1]) };
   if (parts[0] === "lifetime") return { name: "lifetime" };
+  if (parts[0] === "bestiary") return { name: "bestiary" };
   if (parts[0] === "runs") {
     const q = new URLSearchParams(query);
     const filters: RunFilters = {};
