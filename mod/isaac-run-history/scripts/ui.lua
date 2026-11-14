@@ -88,6 +88,20 @@ local function web()
     .. "\nOpen it and drop " .. storage.file_path() .. " onto the page."
 end
 
+local function set_notif(arg)
+  if arg == "0" or arg == "off" then
+    storage.settings.notif = false
+    storage.save()
+    return "Run start popups are off. Run rh notif 1 to re-enable the popup."
+  elseif arg == "1" or arg == "on" then
+    storage.settings.notif = nil
+    storage.save()
+    return "Run start popups are on. Run rh notif 0 to turn them off."
+  end
+  return "Run start popups are " .. (storage.settings.notif == false and "off" or "on")
+    .. ". rh notif 0 turns them off, rh notif 1 back on."
+end
+
 local function export()
   storage.refreshLifetime()
   local data = storage.serialize()
@@ -129,6 +143,7 @@ rh info N              items floor by floor, stats and seed of run #N
 rh export              copy the whole history (JSON) to the clipboard
 rh path                where the history file is (upload it to the web page)
 rh web                 the statistics page's link (copied to the clipboard)
+rh notif 0 / 1         turn the popups at the start of a run off / on
 rh diag                check what this game/REPENTOGON version provides
 ]]
 
@@ -138,6 +153,7 @@ local function handle(sub, rest)
   elseif sub == "export" then return export()
   elseif sub == "path" then return storage.file_path()
   elseif sub == "web" then return web()
+  elseif sub == "notif" then return set_notif(rest)
   elseif sub == "diag" then return diag()
   end
   return HELP

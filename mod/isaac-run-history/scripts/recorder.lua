@@ -17,7 +17,6 @@ local names, storage -- shared instances, from main.lua
 
 local game = Game()
 local log, notify
-local webTipShown = false
 
 local cur          -- the run being recorded
 local ready = false -- true between MC_POST_GAME_STARTED and the end of that run
@@ -240,13 +239,7 @@ local function finalize(run, kind, opts)
   log(string.format("recorded run %s: %s%s", run.id, kind, opts.ending and (" (" .. opts.ending .. ")") or ""))
   if notify then
     local what = kind == "win" and ("win, " .. (opts.ending or "?")) or kind
-    local tip = ""
-    if not webTipShown then
-      -- once per session: where the history turns into statistics
-      webTipShown = true
-      tip = ". Stats: tomandes.eu/isaac-run-history (rh web)"
-    end
-    notify("Run History: run #" .. storage.count() .. " saved (" .. what .. ")" .. tip, 0)
+    notify("Run History: run #" .. storage.count() .. " saved (" .. what .. ")", 0)
   end
 end
 
@@ -297,15 +290,20 @@ end
 -- "Azazel: 12 runs - won 5 of 12 - best win 18:32 - win streak 2", from the summary (no runs
 -- decoded). No "%": notifications crash on it.
 local function show_record(p)
+  if not notify or storage.settings.notif == false then return end
   local sum = storage.summary
   local c = sum and sum.byCharacter and sum.byCharacter[tostring(p:GetPlayerType())]
-  if not (notify and c and (c.runs or 0) > 0) then return end
+  if not (c and (c.runs or 0) > 0) then
+    notify("Run History is recording. Stats: tomandes.eu/isaac-run-history - rh notif 0 hides this", 0)
+    return
+  end
   local parts = { string.format("%s: %d run%s", names.player(p:GetPlayerType()), c.runs, c.runs == 1 and "" or "s") }
   local decided = (c.wins or 0) + (c.deaths or 0)
   if decided > 0 then parts[#parts + 1] = string.format("won %d of %d", c.wins or 0, decided) end
   if c.bestWin then parts[#parts + 1] = "best win " .. clock(c.bestWin) end
   if (sum.streak or 0) > 1 then parts[#parts + 1] = "win streak " .. sum.streak end
   notify(table.concat(parts, " - "), 0)
+  notify("More at tomandes.eu/isaac-run-history - type rh notif 0 to hide these", 0)
 end
 
 local function on_game_started(_, continued)

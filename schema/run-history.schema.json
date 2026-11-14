@@ -59,6 +59,15 @@
         }
       }
     },
+    "settings": {
+      "type": "object",
+      "description": "The player's choices in the mod (1.4.3+): notif false = no popups at the start of a run (rh notif 0)",
+      "properties": {
+        "notif": {
+          "type": "boolean"
+        }
+      }
+    },
     "current": {
       "description": "The run in progress at the last checkpoint. Not a finished run; the web page ignores it.",
       "anyOf": [

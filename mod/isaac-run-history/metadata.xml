@@ -13,6 +13,7 @@ Open the console and click [b]Run History[/b] in the menu bar, or use:
 [*][b]rh export[/b] - copy the whole history (JSON) to the clipboard
 [*][b]rh path[/b] - where the history file is
 [*][b]rh web[/b] - the statistics page's link
+[*][b]rh notif 0[/b] / [b]rh notif 1[/b] - turn the popups at the start of a run off / on
 [/list]
 
 [h2]Requirements[/h2]
@@ -21,7 +22,7 @@ Open the console and click [b]Run History[/b] in the menu bar, or use:
 [*][url=https://repentogon.com]REPENTOGON[/url] required
 [*]Works together with ShareSeed (its share code is stored with each run)
 [/list]</description>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
     <visibility>Private</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>

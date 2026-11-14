@@ -24,6 +24,7 @@ local storage = {
   version = 0,     -- bumped on every change, for the UI
   lifetime = nil,  -- totals from the game's own save (scripts/lifetime.lua), when read this session
   summary = nil,   -- { total, streak, byCharacter = { ["<PlayerType>"] = { runs, wins, deaths, bestWin } } }
+  settings = {},   -- the player's choices, kept in the file: notif = false turns the run start popups off
   collectLifetime = nil, -- set by main.lua
 }
 
@@ -126,6 +127,7 @@ function storage.serialize()
     saveSlot = storage.slot,
     exportedAt = now_iso(),
     summary = storage.summary,
+    settings = next(storage.settings) and storage.settings or nil,
   })
   local cur = "null"
   if storage.current then
@@ -167,7 +169,7 @@ end
 -- Loading -------------------------------------------------------------------------------------
 
 function storage.load()
-  storage.current, storage.lifetime, storage.summary = nil, nil, nil
+  storage.current, storage.lifetime, storage.summary, storage.settings = nil, nil, nil, {}
   lifeJson, runsRaw, added, addedJson, runs = "null", "", {}, {}, nil
   storage.version = storage.version + 1
   if not mod:HasData() then return end
@@ -197,6 +199,7 @@ function storage.load()
     if ok2 then runsRaw = s:sub(2, -2) end
   end
   if type(data.current) == "table" then storage.current = data.current end
+  if type(data.settings) == "table" then storage.settings = data.settings end
   if type(data.summary) == "table" and type(data.summary.byCharacter) == "table" then
     storage.summary = data.summary
   else
