@@ -391,6 +391,15 @@ STAT_ICONS = {
     "battery": ("items/pick ups/pickup_018_littlebattery.png", (0, 0, 32, 32)),
     "rock": ("grid/rocks_basement.png", (0, 0, 32, 32)),
     "rainbowpoop": ("grid/grid_poop_rainbow.png", (0, 0, 32, 32)),
+    # minimap_icons.anm2: IconArcade, IconSlot, IconBattery, IconIsaacsRoom (the bed)
+    "arcade": ("ui/minimap_icons.png", (96, 16, 112, 32)),
+    "slot": ("ui/minimap_icons.png", (80, 96, 96, 112)),
+    "batterymap": ("ui/minimap_icons.png", (32, 64, 48, 80)),
+    "bed": ("ui/minimap_icons.png", (0, 32, 16, 48)),
+    # entities: the special shopkeeper, the shell game's dude, the overcharge battery effect
+    "shopkeeper": ("effects/effect_000_specialshopkeepers.png", (0, 0, 64, 64)),
+    "shellgame": ("items/slots/slot_006_shell_game.png", (64, 0, 96, 32)),
+    "overcharge": ("effects/effect_001_batteryeffect.png", (96, 32, 128, 64)),
 }
 
 
@@ -403,8 +412,13 @@ def build_stat_icons(gfx: Path) -> list[str]:
     for name, (sheet, box) in STAT_ICONS.items():
         img = Image.open(gfx / sheet).convert("RGBA").crop(box)
         trimmed = img.crop(img.getbbox() or (0, 0, 1, 1))
-        if trimmed.width * 2 <= size and trimmed.height * 2 <= size:
-            trimmed = trimmed.resize((trimmed.width * 2, trimmed.height * 2), Image.NEAREST)
+        # the minimap icons are tiny (~10px), so they get as big as fits (up to 4x) to read as
+        # well as the rest
+        scale = 2
+        if sheet.endswith("minimap_icons.png"):
+            scale = max((s for s in (4, 3, 2) if max(trimmed.size) * s <= size), default=2)
+        if trimmed.width * scale <= size and trimmed.height * scale <= size:
+            trimmed = trimmed.resize((trimmed.width * scale, trimmed.height * scale), Image.NEAREST)
         icon = Image.new("RGBA", (size, size))
         icon.alpha_composite(trimmed, ((size - trimmed.width) // 2, (size - trimmed.height) // 2))
         icon.save(out / f"{name}.png")
