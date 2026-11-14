@@ -84,8 +84,9 @@ npm run dev      # http://localhost:5173
 npm run build    # static site in web/dist
 ```
 
-Upload the contents of `web/dist` anywhere (it uses relative paths, so a subfolder works). There's
-no backend.
+The page is live at **https://tomandesmsh.github.io/isaac-run-history/**: every push to `main`
+builds it and publishes it on GitHub Pages (`.github/workflows/pages.yml`). It's a static site with
+relative paths, so the contents of `web/dist` also work from any other host or subfolder.
 
 ### Game graphics
 
@@ -101,9 +102,11 @@ python tools/extract_assets.py
 ### Music
 
 The page can play the music of the floor it's set in (speaker icon in the top bar; the volume
-always starts at 0). The soundtracks aren't in the repo: put them in `web/public/mus/rep/`
-(Repentance+) and `web/public/mus/antibirth/` as `<floor>.ogg` / `<floor> intro.ogg`, then run
-`python tools/music_manifest.py` so the page knows the exact file names.
+always starts at 0), from the Repentance+ or the Antibirth soundtrack. The music isn't part of this
+repo: it lives in [Isaac-run-history.musicDb](https://github.com/tomandesMSH/Isaac-run-history.musicDb)
+(`rep/` and `antibirth/`) and the page streams it from GitHub, pinned to one commit of that repo.
+After changing the music repo, run `python tools/music_manifest.py` to point the page at the new
+commit and commit `web/src/data/music-manifest.json`.
 
 ## Limitations
 

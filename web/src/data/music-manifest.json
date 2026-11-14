@@ -1,0 +1,199 @@
+{
+ "repo": "tomandesMSH/Isaac-run-history.musicDb",
+ "commit": "14ae91855ebb1fc012f69dca8772143ec6b3cffb",
+ "base": "https://raw.githubusercontent.com/tomandesMSH/Isaac-run-history.musicDb/14ae91855ebb1fc012f69dca8772143ec6b3cffb/",
+ "fallback": "https://cdn.jsdelivr.net/gh/tomandesMSH/Isaac-run-history.musicDb@14ae91855ebb1fc012f69dca8772143ec6b3cffb/",
+ "soundtracks": [
+  {
+   "key": "rep",
+   "name": "Repentance+"
+  },
+  {
+   "key": "antibirth",
+   "name": "Antibirth"
+  }
+ ],
+ "tracks": {
+  "rep": {
+   "basement": {
+    "loop": "rep/basement.ogg",
+    "intro": "rep/basement intro.ogg"
+   },
+   "cellar": {
+    "loop": "rep/cellar.ogg",
+    "intro": "rep/cellar intro.ogg"
+   },
+   "burning-basement": {
+    "loop": "rep/burning_basement.ogg",
+    "intro": "rep/burning_basement intro.ogg"
+   },
+   "downpour": {
+    "loop": "rep/downpour.mp3"
+   },
+   "dross": {
+    "loop": "rep/dross.mp3"
+   },
+   "caves": {
+    "loop": "rep/caves.ogg",
+    "intro": "rep/caves intro.ogg"
+   },
+   "catacombs": {
+    "loop": "rep/catacombs.ogg",
+    "intro": "rep/catacombs intro.ogg"
+   },
+   "flooded-caves": {
+    "loop": "rep/flooded_caves.ogg",
+    "intro": "rep/flooded_caves intro.ogg"
+   },
+   "mines": {
+    "loop": "rep/mines.mp3"
+   },
+   "ashpit": {
+    "loop": "rep/ashpit.mp3",
+    "intro": "rep/ashpit intro.mp3"
+   },
+   "depths": {
+    "loop": "rep/depths.ogg",
+    "intro": "rep/depths intro.ogg"
+   },
+   "necropolis": {
+    "loop": "rep/necropolis.ogg",
+    "intro": "rep/necropolis intro.ogg"
+   },
+   "dank-depths": {
+    "loop": "rep/dank depths.ogg",
+    "intro": "rep/dank depths intro.ogg"
+   },
+   "mausoleum": {
+    "loop": "rep/mausoleum.mp3"
+   },
+   "gehenna": {
+    "loop": "rep/gehenna.mp3"
+   },
+   "womb": {
+    "loop": "rep/womb.ogg",
+    "intro": "rep/womb intro.ogg"
+   },
+   "utero": {
+    "loop": "rep/utero.ogg"
+   },
+   "scarred-womb": {
+    "loop": "rep/scarred_womb.ogg",
+    "intro": "rep/scarred_womb intro.ogg"
+   },
+   "corpse": {
+    "loop": "rep/corpse.ogg",
+    "intro": "rep/corpse intro.ogg"
+   },
+   "blue-womb": {
+    "loop": "rep/dead_womb.ogg",
+    "intro": "rep/dead_womb intro.ogg"
+   },
+   "sheol": {
+    "loop": "rep/sheol.ogg",
+    "intro": "rep/sheol intro.ogg"
+   },
+   "cathedral": {
+    "loop": "rep/cathedral.ogg",
+    "intro": "rep/cathedral intro.ogg"
+   },
+   "dark-room": {
+    "loop": "rep/darkroom.ogg",
+    "intro": "rep/darkroom intro.ogg"
+   },
+   "chest": {
+    "loop": "rep/chest.ogg",
+    "intro": "rep/chest intro.ogg"
+   }
+  },
+  "antibirth": {
+   "basement": {
+    "loop": "antibirth/basement.ogg",
+    "intro": "antibirth/basement intro.ogg"
+   },
+   "cellar": {
+    "loop": "antibirth/cellar.ogg",
+    "intro": "antibirth/cellar intro.ogg"
+   },
+   "burning-basement": {
+    "loop": "antibirth/burning_basement.ogg",
+    "intro": "antibirth/burning_basement Intro.ogg"
+   },
+   "downpour": {
+    "loop": "antibirth/downpour.ogg",
+    "intro": "antibirth/downpour Intro.ogg"
+   },
+   "caves": {
+    "loop": "antibirth/caves.ogg",
+    "intro": "antibirth/caves intro.ogg"
+   },
+   "catacombs": {
+    "loop": "antibirth/catacombs.ogg",
+    "intro": "antibirth/catacombs Intro.ogg"
+   },
+   "flooded-caves": {
+    "loop": "antibirth/flooded_caves.ogg",
+    "intro": "antibirth/flooded_caves intro.ogg"
+   },
+   "mines": {
+    "loop": "antibirth/mines.ogg",
+    "intro": "antibirth/mines intro.ogg"
+   },
+   "ashpit": {
+    "loop": "antibirth/ashpit.mp3",
+    "intro": "antibirth/ashpit intro.mp3"
+   },
+   "depths": {
+    "loop": "antibirth/depths.ogg",
+    "intro": "antibirth/depths intro.ogg"
+   },
+   "necropolis": {
+    "loop": "antibirth/necropolis.ogg",
+    "intro": "antibirth/necropolis Intro.ogg"
+   },
+   "dank-depths": {
+    "loop": "antibirth/dank_depths.ogg",
+    "intro": "antibirth/dank_depths intro.ogg"
+   },
+   "mausoleum": {
+    "loop": "antibirth/mausoleum.ogg",
+    "intro": "antibirth/mausoleum Intro.ogg"
+   },
+   "womb": {
+    "loop": "antibirth/womb.ogg",
+    "intro": "antibirth/womb intro.ogg"
+   },
+   "utero": {
+    "loop": "antibirth/utero.ogg"
+   },
+   "scarred-womb": {
+    "loop": "antibirth/scarred_womb.ogg",
+    "intro": "antibirth/scarred_womb Intro.ogg"
+   },
+   "corpse": {
+    "loop": "antibirth/corpse.ogg",
+    "intro": "antibirth/corpse Intro.ogg"
+   },
+   "blue-womb": {
+    "loop": "antibirth/dead_womb.ogg",
+    "intro": "antibirth/dead_womb intro.ogg"
+   },
+   "sheol": {
+    "loop": "antibirth/sheol.ogg",
+    "intro": "antibirth/sheol intro.ogg"
+   },
+   "cathedral": {
+    "loop": "antibirth/cathedral.ogg",
+    "intro": "antibirth/cathedral Intro.ogg"
+   },
+   "dark-room": {
+    "loop": "antibirth/darkroom.ogg",
+    "intro": "antibirth/darkroom intro.ogg"
+   },
+   "chest": {
+    "loop": "antibirth/chest.ogg",
+    "intro": "antibirth/chest intro.ogg"
+   }
+  }
+ }
+}

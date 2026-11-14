@@ -4,5 +4,5 @@ web/dist/
 
 __pycache__/
 
-# The soundtracks (Repentance+ / Antibirth) stay out of git; copy them to web/public/mus/ and run tools/music_manifest.py
+# Old local copy of the soundtracks: the page now plays them from the Isaac-run-history.musicDb repo
 web/public/mus/

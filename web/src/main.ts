@@ -6,7 +6,8 @@ import { parseExport, type Lifetime, type Run } from "./model/schema";
 import { parseRoute } from "./router";
 import { useExtractedIcons } from "./data/items";
 import { setupBackgrounds } from "./background";
-import { setupMusic } from "./music";
+import { setupMusic, type MusicManifest } from "./music";
+import musicManifest from "./data/music-manifest.json";
 import { clearRuns, deleteRun, loadLifetimes, loadRuns, saveLifetime, saveRuns } from "./storage/db";
 import { defaultStatsOptions, renderStats } from "./views/stats";
 import { renderRuns } from "./views/runs";
@@ -219,14 +220,9 @@ async function loadGameGraphics(): Promise<void> {
   }
 }
 
-// The floors' music, when mus/ has it (tools/music_manifest.py).
+// The floors' music, from its own repo (tools/music_manifest.py writes the manifest).
 async function loadMusic(): Promise<void> {
-  try {
-    const res = await fetch("mus/manifest.json", { cache: "no-cache" });
-    if (res.ok) setupMusic(await res.json());
-  } catch {
-    // no music
-  }
+  setupMusic(musicManifest as MusicManifest);
 }
 
 Promise.all([

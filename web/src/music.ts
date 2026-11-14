@@ -1,4 +1,6 @@
-// Music of the chosen floor, from mus/ (tools/music_manifest.py lists the files).
+// Music of the chosen floor. The files live in their own GitHub repo, not with the page:
+// data/music-manifest.json (tools/music_manifest.py) has where, pinned to one commit, and the
+// file of every floor in each soundtrack.
 //
 // The volume always starts at 0 on a page load: nothing plays until the viewer turns it up (which
 // is also the click browsers want before they play sound). Turning it up starts the floor's
@@ -11,7 +13,10 @@ interface Track {
   intro?: string;
 }
 
-interface MusicManifest {
+export interface MusicManifest {
+  /** URL the paths are relative to, and another one serving the same files if that fails. */
+  base: string;
+  fallback?: string;
   soundtracks: { key: string; name: string }[];
   tracks: Record<string, Record<string, Track>>;
 }
@@ -30,8 +35,25 @@ let loop: HTMLAudioElement | null = null;
 let active: HTMLAudioElement | null = null;
 const listeners: (() => void)[] = [];
 
-function url(path: string): string {
-  return new URL(`mus/${path.split("/").map(encodeURIComponent).join("/")}`, document.baseURI).href;
+function url(base: string, path: string): string {
+  return base + path.split("/").map(encodeURIComponent).join("/");
+}
+
+/** An audio element for a file; it switches to the fallback server once if the main one fails. */
+function audio(path: string): HTMLAudioElement {
+  const el = new Audio(url(manifest!.base, path));
+  el.preload = "auto";
+  const fallback = manifest!.fallback;
+  if (fallback) {
+    el.addEventListener("error", () => {
+      const alt = url(fallback, path);
+      if (el.src === alt) return;
+      const resume = active === el && playing;
+      el.src = alt;
+      if (resume) playEl(el);
+    });
+  }
+  return el;
 }
 
 function trackFor(key: string | null): Track | undefined {
@@ -66,11 +88,11 @@ function stopAudio(): void {
 function startAudio(): void {
   const t = trackFor(floor);
   if (!t) return;
-  const thisLoop = new Audio(url(t.loop));
+  const thisLoop = audio(t.loop);
   thisLoop.loop = true;
   loop = thisLoop;
   if (t.intro) {
-    const thisIntro = new Audio(url(t.intro));
+    const thisIntro = audio(t.intro);
     intro = thisIntro;
     thisIntro.addEventListener("ended", () => {
       if (intro === thisIntro && playing) playEl(thisLoop);
