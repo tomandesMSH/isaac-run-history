@@ -3,8 +3,9 @@
 // the browser's hover tooltip, and the series colors come from CSS (charts in style.css).
 
 import { emptyNote, h } from "../dom";
-import { percent } from "../format";
-import type { Run } from "../model/schema";
+import { floorName } from "../data/game";
+import { isGreed, percent } from "../format";
+import type { Run, Stats } from "../model/schema";
 import { isDecided } from "../stats/stats";
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -209,4 +210,51 @@ export function overTime(runs: Run[], countQuits: boolean): HTMLElement {
     h("h3", { class: "chart-title" }, "Days played", h("span", { class: "muted" }, " · last year")),
     h("div", { class: "chart-wrap heatmap-wrap" }, heatmap(runs),
       h("div", { class: "chart-legend heat-legend" }, "less ", [0, 1, 2, 3, 4].map((l) => h("i", { class: `swatch heat heat-${l}` })), " more")));
+}
+
+const STAT_KEYS: [keyof Stats, string][] = [
+  ["damage", "Damage"], ["tears", "Tears"], ["speed", "Speed"], ["range", "Range"], ["shotSpeed", "Shot speed"], ["luck", "Luck"],
+];
+
+/** One run's stats floor by floor (mod 1.4+): a small line chart per stat, each with its own axis.
+ * Points are the stats on entering each floor and, last, the final stats. */
+export function statsByFloor(run: Run): HTMLElement | null {
+  const points: { label: string; stats: Stats }[] = run.floors
+    .map((f) => ({ label: floorName(f.stage, f.stageType, isGreed(run), f.curses ?? 0), stats: f.stats }))
+    .filter((p): p is { label: string; stats: Stats } => !!p.stats);
+  if (points.length === 0) return null;
+  if (run.stats) points.push({ label: "End of the run", stats: run.stats });
+  if (points.length < 2) return null;
+
+  const W = 260, H = 110, left = 34, right = 10, top = 12, bottom = 18;
+  const x = (i: number) => left + (i * (W - left - right)) / (points.length - 1);
+  const charts = STAT_KEYS.map(([key, label]) => {
+    const vals = points.map((p) => p.stats[key]);
+    const known = vals.filter((v): v is number => v !== undefined);
+    if (!known.length) return null;
+    let lo = Math.min(...known), hi = Math.max(...known);
+    if (hi - lo < 0.01) { lo -= 1; hi += 1; }
+    const y = (v: number) => top + (1 - (v - lo) / (hi - lo)) * (H - top - bottom);
+    const fmt = (v: number) => String(Math.round(v * 100) / 100);
+    const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart stat-chart", role: "img", "aria-label": `${label} floor by floor` });
+    svg.append(
+      s("line", { x1: left, x2: W - right, y1: y(lo), y2: y(lo), class: "chart-base" }),
+      s("line", { x1: left, x2: W - right, y1: y(hi), y2: y(hi), class: "chart-grid" }),
+      s("text", { x: left - 4, y: y(hi) + 4, "text-anchor": "end", class: "chart-tick" }, fmt(hi)),
+      s("text", { x: left - 4, y: y(lo) + 4, "text-anchor": "end", class: "chart-tick" }, fmt(lo)),
+      s("text", { x: left, y: H - 3, class: "chart-tick" }, "start"),
+      s("text", { x: W - right, y: H - 3, "text-anchor": "end", class: "chart-tick" }, "end"));
+    const pts = vals.map((v, i) => (v === undefined ? null : `${x(i)},${y(v)}`)).filter(Boolean).join(" ");
+    svg.append(s("polyline", { points: pts, class: "chart-line" }));
+    vals.forEach((v, i) => {
+      if (v === undefined) return;
+      svg.append(s("g", { class: "chart-point" },
+        s("circle", { cx: x(i), cy: y(v), r: 12, class: "chart-hit" }),
+        s("circle", { cx: x(i), cy: y(v), r: 4, class: "chart-dot" }),
+        tip(`${points[i].label}: ${label} ${fmt(v)}`)));
+    });
+    return h("figure", { class: "stat-fig" }, h("figcaption", { class: "chart-title" }, label, " ",
+      h("span", { class: "muted" }, `${fmt(known[0])} → ${fmt(known[known.length - 1])}`)), svg);
+  });
+  return h("div", { class: "stat-charts" }, charts);
 }

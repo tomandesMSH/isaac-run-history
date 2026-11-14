@@ -618,3 +618,6 @@ a.boss-main[href]:hover .boss-nameimg, a.boss-main[href]:hover .collect-name { f
 .cmp-table td.cmp-better::after { content: " ▲"; font-size: 0.7em; }
 .error-text { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--paper-light); background: rgb(0 0 0 / 0.4); padding: 0.6rem; }
 .ach-note { color: var(--title-red); font-size: 0.85em; margin-top: 0.2rem; }
+.stat-charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 0.8rem 1.2rem; }
+.stat-fig { margin: 0; }
+.stat-fig .chart-title { margin: 0 0 0.2rem; }

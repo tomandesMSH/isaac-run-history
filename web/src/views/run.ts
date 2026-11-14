@@ -9,6 +9,7 @@ import {
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import { shareRun } from "../share";
+import { statsByFloor } from "./charts";
 
 function meta(label: string, value: Node | string): HTMLElement {
   return h("div", { class: "meta" }, h("dt", null, label), h("dd", null, value));
@@ -73,6 +74,7 @@ export function renderRun(run: Run | undefined, onDelete: (run: Run) => void): H
     return h("div", { class: "page" }, h("h1", null, "Run not found"), h("p", null, h("a", { href: "#/runs" }, "Back to all runs")));
   }
   const challenge = challengeName(run);
+  const floorStats = statsByFloor(run);
   const k = run.result.killedBy;
   const deleteBtn = h("button", {
     class: "btn btn-small btn-danger", type: "button",
@@ -112,5 +114,7 @@ export function renderRun(run: Run | undefined, onDelete: (run: Run) => void): H
       run.partial ? meta("Note", "recording started mid-run; earlier items are under the first floor") : null,
       run.saveSlot ? meta("Save slot", String(run.saveSlot)) : null)),
     h("section", { class: "card card-wide" }, h("header", { class: "card-head" }, h("h2", null, "Final stats")), statsGrid(run)),
+    floorStats ? h("section", { class: "card card-wide" }, h("header", { class: "card-head" }, h("h2", null, "Stats by floor"),
+      h("p", { class: "card-note" }, "On entering each floor, then at the end of the run. Hover a point for the floor.")), floorStats) : null,
     h("section", { class: "card card-wide" }, h("header", { class: "card-head" }, h("h2", null, "Floor by floor")), timeline(run)));
 }
