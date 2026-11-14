@@ -190,10 +190,14 @@ document.getElementById("import-panel")!.append(
   h("button", { class: "dropzone", type: "button", onClick: () => { closeImport(); openFilePicker(); } },
     h("strong", null, "Drop your history file here"),
     h("span", null, "save1.dat (or save2 / save3), or click to choose it")),
-  h("div", { class: "path-row" }, h("code", null, HISTORY_FOLDER), copyButton(HISTORY_FOLDER, "Copy path")),
-  h("p", { class: "import-more" }, "Or ",
-    h("button", { class: "link", type: "button", onClick: () => { closeImport(); openPaste(); } }, "paste rh export"),
-    folderSupported ? [" · ", h("button", { class: "link", type: "button", onClick: () => { closeImport(); void connectOrSync(); } }, "connect the folder")] : null));
+  h("code", { class: "import-path" }, HISTORY_FOLDER),
+  h("div", { class: "import-actions" },
+    copyButton(HISTORY_FOLDER, "Copy path"),
+    h("button", { class: "btn btn-small", type: "button", title: "Paste the text the rh export console command copied",
+      onClick: () => { closeImport(); openPaste(); } }, "Paste rh export"),
+    folderSupported
+      ? h("button", { class: "btn btn-small", type: "button", onClick: () => { closeImport(); void connectOrSync(); } }, "Connect folder")
+      : null));
 
 // open menus close on a click elsewhere, a dropped file or Escape
 document.addEventListener("click", (e) => {

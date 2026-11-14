@@ -416,8 +416,8 @@ a.item:hover { color: var(--title-red); background: #fff6e4; }
 .music-panel { min-width: 0; width: max-content; padding: 0.4rem 0.6rem; }
 .import-panel { width: min(440px, calc(100vw - 32px)); padding: 0.8rem; display: flex; flex-direction: column; gap: 0.6rem; text-align: center; }
 .import-panel .dropzone { padding: 0.7rem; }
-.import-panel .path-row code { font-size: 0.75rem; }
-.import-more { margin: 0; }
+.import-path { font-size: 0.75rem; word-break: break-all; text-align: left; }
+.import-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
 .music-row { display: flex; align-items: center; gap: 0.7rem; }
 .music-play {
   width: 22px; height: 26px; padding: 0; border: 0; cursor: pointer; flex: none;
