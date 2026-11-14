@@ -8,7 +8,7 @@
 --   scripts/ui.lua        console command and ImGui window
 --   scripts/lifetime.lua  totals from the game's own save (bestiary, marks, collection, counters)
 
-local VERSION = "1.4.3"
+local VERSION = "1.4.4"
 
 local mod = RegisterMod("Isaac Run History", 1)
 
@@ -22,17 +22,21 @@ if not REPENTOGON then
   return
 end
 
--- Notifications don't word-wrap, so break long text into lines ourselves.
+-- Notifications don't word-wrap, so break long text into lines ourselves. Line breaks already in
+-- the text stay, so a message can keep something (a command) on one line.
 local function wrap(text, width)
-  local lines, line = {}, ""
-  for word in text:gmatch("%S+") do
-    if line ~= "" and #line + 1 + #word > width then
-      lines[#lines + 1], line = line, word
-    else
-      line = line == "" and word or (line .. " " .. word)
+  local lines = {}
+  for para in (text .. "\n"):gmatch("(.-)\n") do
+    local line = ""
+    for word in para:gmatch("%S+") do
+      if line ~= "" and #line + 1 + #word > width then
+        lines[#lines + 1], line = line, word
+      else
+        line = line == "" and word or (line .. " " .. word)
+      end
     end
+    lines[#lines + 1] = line
   end
-  lines[#lines + 1] = line
   return table.concat(lines, "\n")
 end
 

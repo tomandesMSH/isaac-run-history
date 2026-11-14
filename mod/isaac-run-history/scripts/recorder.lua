@@ -289,12 +289,14 @@ end
 
 -- "Azazel: 12 runs - won 5 of 12 - best win 18:32 - win streak 2", from the summary (no runs
 -- decoded). No "%": notifications crash on it.
+local WEB_TIP = 'For more info visit tomandes.eu/isaac-run-history/\nRun "rh notif 0" to disable this popup.'
+
 local function show_record(p)
   if not notify or storage.settings.notif == false then return end
   local sum = storage.summary
   local c = sum and sum.byCharacter and sum.byCharacter[tostring(p:GetPlayerType())]
   if not (c and (c.runs or 0) > 0) then
-    notify("Run History is recording. Stats: tomandes.eu/isaac-run-history - rh notif 0 hides this", 0)
+    notify("Run History is recording your runs.\n" .. WEB_TIP, 0)
     return
   end
   local parts = { string.format("%s: %d run%s", names.player(p:GetPlayerType()), c.runs, c.runs == 1 and "" or "s") }
@@ -302,8 +304,9 @@ local function show_record(p)
   if decided > 0 then parts[#parts + 1] = string.format("won %d of %d", c.wins or 0, decided) end
   if c.bestWin then parts[#parts + 1] = "best win " .. clock(c.bestWin) end
   if (sum.streak or 0) > 1 then parts[#parts + 1] = "win streak " .. sum.streak end
+  -- the newest notification shows on top: the tip goes first so it sits under the record line
+  notify(WEB_TIP, 0)
   notify(table.concat(parts, " - "), 0)
-  notify("More at tomandes.eu/isaac-run-history - type rh notif 0 to hide these", 0)
 end
 
 local function on_game_started(_, continued)
