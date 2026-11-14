@@ -14,6 +14,26 @@ The project has two parts:
 - **The web page** (`web/`) takes the export and shows statistics. It runs only in your browser,
   your data goes nowhere.
 
+## Screenshots
+
+**The web page**, at [tomandes.eu/isaac-run-history](https://tomandes.eu/isaac-run-history/). The room
+in the background is your pick of the game's floors.
+
+![Statistics: runs, win rate, personal records](docs/screenshots/web-statistics.jpg)
+
+| | |
+| --- | --- |
+| ![Lifetime: totals from the game's save and completion marks](docs/screenshots/web-lifetime.jpg) | ![One run: result, seed, ShareSeed code, final stats](docs/screenshots/web-run.jpg) |
+| **Lifetime:** the save's totals and completion marks drawn like the pause menu's | **A run:** result, seed, final stats, floor by floor |
+| ![Bosses with the versus screen portraits](docs/screenshots/web-bosses.jpg) | ![Item collection with quality and win rate](docs/screenshots/web-items.jpg) |
+| **Bosses:** the versus screen's portraits, where and how often you beat them | **Items:** the whole collection, quality, pools, how runs with them went |
+
+**In the game:** your record with the character when a run starts, and `rh diag` in the console.
+
+![Run start popup](docs/screenshots/game-popup.png)
+
+![rh diag in the REPENTOGON console](docs/screenshots/game-console.png)
+
 ## What gets saved for each run
 
 - date and time, run length (in-game time, the same as the game's own timer)
