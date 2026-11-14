@@ -6,7 +6,7 @@ import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import {
-  applyFilters, bestItems, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
+  applyFilters, bestItems, bossGroups, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
   winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup,
 } from "../stats/stats";
 
@@ -76,6 +76,14 @@ export function recordTiles(list: RunRecord[]): HTMLElement {
         `${characterName(r.run)}${r.kind === "streak" ? ", last win" : ""} →`)))));
 }
 
+function bossList(groups: ReturnType<typeof bossGroups>): HTMLElement {
+  const top = [...groups].sort((a, b) => b.runs - a.runs || a.label.localeCompare(b.label)).slice(0, 8);
+  return h("div", null,
+    countList(top.map((g) => ({ key: g.key, label: g.label, count: g.runs })), "neutral", "No bosses beaten yet.",
+      (g) => runsLink({ boss: g.key })),
+    groups.length ? h("p", null, h("a", { href: "#/bosses" }, `All ${groups.length} bosses →`)) : null);
+}
+
 export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: StatsOptions) => void): HTMLElement {
   const runs = applyFilters(allRuns, opts);
   const s = summary(runs, opts.countQuits);
@@ -141,6 +149,7 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       card("Best trinkets by win rate",
         bestTrinkets.length ? itemTable(bestTrinkets, "winrate", s.winRate, "Trinket") : emptyNote(`No trinket has been in ${opts.minRuns}+ decided runs yet.`),
         { note: `Trinkets held in at least ${opts.minRuns} decided runs (the same minimum as items).` }),
+      card("Bosses beaten", bossList(bossGroups(runs, opts.countQuits))),
       card("Causes of death", countList(deathCauses(runs).slice(0, 15), "death", "No deaths. Nice.")),
       card("Floor of death", countList(deathFloors(runs), "death", "No deaths. Nice."))));
 }

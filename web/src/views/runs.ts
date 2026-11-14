@@ -3,7 +3,7 @@
 import { itemInfo, trinketInfo } from "../data/items";
 import { clear, emptyNote, h, resultBadge } from "../dom";
 import {
-  byNewest, challengeName, characterKey, characterName, dateTime, difficultyName, duration, endFloorName, resultText,
+  bossName, byNewest, challengeName, characterKey, characterName, dateTime, difficultyName, duration, endFloorName, resultText,
 } from "../format";
 import type { Run } from "../model/schema";
 import { runLink, runsLink, type RunFilters } from "../router";
@@ -12,6 +12,7 @@ function matches(run: Run, f: RunFilters): boolean {
   if (f.char && characterKey(run) !== f.char) return false;
   if (f.result && run.result.type !== f.result) return false;
   if (f.difficulty && run.difficulty !== f.difficulty) return false;
+  if (f.boss && !run.floors.some((fl) => (fl.bosses ?? []).some((b) => String(b.bossId) === f.boss))) return false;
   if (f.item) {
     const needle = f.item.toLowerCase();
     const has = run.items.some((i) => itemInfo(i.id, i.name).name.toLowerCase().includes(needle))
@@ -47,6 +48,8 @@ export function renderRuns(allRuns: Run[], initial: RunFilters): HTMLElement {
     if (c) c.n++;
     else chars.set(k, { label: characterName(r), n: 1 });
   }
+  const bosses = new Map<string, string>();
+  for (const r of runs) for (const fl of r.floors) for (const b of fl.bosses ?? []) bosses.set(String(b.bossId), bossName(b.bossId));
   const itemNames = new Set<string>();
   for (const r of runs) for (const i of r.items) itemNames.add(itemInfo(i.id, i.name).name);
   for (const r of runs) for (const t of r.trinkets) itemNames.add(trinketInfo(t.id, t.name).name);
@@ -76,6 +79,7 @@ export function renderRuns(allRuns: Run[], initial: RunFilters): HTMLElement {
     select("char", "Character", [...chars].sort((a, b) => b[1].n - a[1].n).map(([k, c]) => [k, `${c.label} (${c.n})`])),
     select("result", "Result", [["win", "Win"], ["death", "Death"], ["quit", "Quit"], ["unknown", "Unknown"]]),
     select("difficulty", "Difficulty", [["normal", "Normal"], ["hard", "Hard"], ["greed", "Greed"], ["greedier", "Greedier"]]),
+    select("boss", "Boss", [...bosses].sort((a, b) => a[1].localeCompare(b[1]))),
     h("label", null, "Item or trinket ", itemInput),
     h("datalist", { id: "item-names" }, [...itemNames].sort().map((n) => h("option", { value: n }))));
 

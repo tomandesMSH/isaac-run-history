@@ -691,6 +691,48 @@ def write_achievements_web(res: Path) -> int:
     return len(entries)
 
 
+# The page's bosses: the versus screen's portrait and hand-written name for every BossType
+# (bossportraits.xml), trimmed to what's drawn. Very big ones (Mother, The Beast) are halved.
+BOSSES_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "bosses.json"
+
+
+def write_bosses_web(res: Path) -> int:
+    xml = (res / "bossportraits.xml").read_text(encoding="utf-8", errors="replace")
+    src = res / "gfx" / "ui" / "boss"
+    files = {f.name.lower(): f for f in src.iterdir()}
+    out = OUT / "bosses"
+    out.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for m in re.finditer(r"<boss\s([^>]*)/?>", xml):
+        a = {k: html.unescape(v) for k, v in re.findall(r'(\w+)="([^"]*)"', m.group(1))}
+        if "id" not in a:
+            continue
+        i = int(a["id"])
+        e = {"id": i, "name": a.get("name", f"Boss #{i}")}
+        for attr, suffix, key in (("portrait", "", "portrait"), ("nameimage", "-name", "nameImg")):
+            f = files.get(a.get(attr, "").lower())
+            if not f:
+                continue
+            img = Image.open(f).convert("RGBA")
+            box = img.getbbox()
+            if not box:
+                continue
+            img = img.crop(box)
+            if key == "nameImg":
+                # paper-coloured letters for the dark versus screen: redraw them in ink for the page's paper
+                ink = Image.new("RGBA", img.size, (43, 31, 28, 255))
+                ink.putalpha(img.getchannel("A"))
+                img = ink
+            if max(img.size) > 240:
+                img = img.resize((img.width // 2, img.height // 2), Image.NEAREST)
+            img.save(out / f"{i}{suffix}.png", optimize=True)
+            e[key] = [img.width, img.height]
+        entries.append(e)
+    entries.sort(key=lambda e: e["id"])
+    BOSSES_JSON.write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return len(entries)
+
+
 # The page's bestiary: the full list (bundled into the page, so names work without graphics) and
 # the death screen's ink portraits, 64x48 cells: enemies 16 per row, bosses 7 per row.
 BESTIARY_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "bestiary.json"
@@ -831,6 +873,7 @@ def main() -> None:
     print(f"bestiary for the page: {write_bestiary_web(res)}")
     print(f"items for the page: {write_items_web(res)}")
     print(f"achievements for the page: {write_achievements_web(res)}")
+    print(f"bosses for the page: {write_bosses_web(res)}")
 
     (OUT / "manifest.json").write_text(json.dumps({
         "version": 2,

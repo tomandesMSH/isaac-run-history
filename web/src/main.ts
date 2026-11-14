@@ -15,6 +15,7 @@ import { renderRuns } from "./views/runs";
 import { renderRun } from "./views/run";
 import { renderAchievements } from "./views/achievements";
 import { renderBestiary } from "./views/bestiary";
+import { renderBosses } from "./views/bosses";
 import { renderCharacter } from "./views/character";
 import { renderItems } from "./views/items";
 import { renderLifetime } from "./views/lifetime";
@@ -222,7 +223,7 @@ function render(): void {
   const hasData = state.runs.length > 0 || state.lifetimes.length > 0;
   document.body.classList.toggle("no-data", !hasData);
   const route = parseRoute(location.hash);
-  setActiveNav(route.name === "run" ? "runs" : route.name === "bestiary" || route.name === "items" || route.name === "achievements" ? "lifetime" : route.name === "character" ? "stats" : route.name);
+  setActiveNav(route.name === "run" ? "runs" : route.name === "bestiary" || route.name === "items" || route.name === "achievements" ? "lifetime" : route.name === "character" || route.name === "bosses" ? "stats" : route.name);
 
   if (!hasData) {
     clear(main, emptyState());
@@ -248,6 +249,10 @@ function render(): void {
       break;
     case "items":
       clear(main, renderItems(state.lifetimes, state.lifetimeSlot, state.runs, state.statsOptions.countQuits));
+      window.scrollTo(0, 0);
+      break;
+    case "bosses":
+      clear(main, renderBosses(state.runs, state.statsOptions.countQuits));
       window.scrollTo(0, 0);
       break;
     case "bestiary":

@@ -554,6 +554,18 @@ a.collect[href]:hover .collect-name { text-decoration: underline; }
 .collect.missing .collect-name { color: var(--ink-muted); }
 .quality { font-weight: 700; }
 .quality.q4 { color: var(--title-red); } .quality.q3 { color: var(--brown-dark); }
+/* ---------- bosses ---------- */
+
+.boss-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.2rem 0.8rem; }
+.boss { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; color: var(--ink); text-decoration: none; }
+a.boss[href]:hover .boss-nameimg, a.boss[href]:hover .collect-name { filter: drop-shadow(0 0 2px var(--title-red)); }
+.boss-portrait { height: 140px; display: flex; align-items: flex-end; justify-content: center; }
+.boss-portrait img { max-height: 140px; max-width: 170px; width: auto; height: auto; image-rendering: pixelated; }
+.boss-nameimg { max-width: 160px; height: auto; image-rendering: pixelated; margin: 0.2rem 0; }
+.boss-killed { color: var(--title-red); font-size: 0.8rem; }
+.boss.missing .boss-portrait img, .boss.missing .boss-nameimg { opacity: 0.25; filter: grayscale(1); }
+.card .boss-grid a.boss { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
+
 .card .collect-grid a.collect, .card .marks-notes a.marks-card { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
 
 /* ---------- achievements ---------- */

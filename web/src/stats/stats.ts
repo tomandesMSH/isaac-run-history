@@ -3,9 +3,11 @@
 // Win rate = wins / decided runs. A run is decided when it was won or lost (died); quits and runs
 // cut short by a crash don't count unless countQuits is on, then they count as losses.
 
-import { endingName, floorName, floorOrder } from "../data/game";
+import { BOSSES, endingName, floorName, floorOrder } from "../data/game";
+
+const BOSS_IDS = Object.keys(BOSSES).map(Number);
 import { itemInfo, trinketInfo, type ItemInfo } from "../data/items";
-import { characterKey, characterName, isGreed, killerName } from "../format";
+import { bossName, characterKey, characterName, isGreed, killerName } from "../format";
 import type { Difficulty, Run } from "../model/schema";
 
 export interface StatsOptions {
@@ -164,6 +166,47 @@ export function bestItems<T extends ItemGroup>(groups: T[], minRuns: number, lim
     .filter((g) => g.decided >= minRuns)
     .sort((a, b) => b.winRate - a.winRate || b.decided - a.decided)
     .slice(0, limit);
+}
+
+export interface BossGroup extends WinGroup {
+  bossId: number;
+  /** floors it was beaten on, most often first */
+  floors: CountGroup[];
+  /** runs that ended with it killing you */
+  killedYou: number;
+}
+
+/** Per boss (BossType): in how many runs it was beaten, how those runs went, where, and how often it killed you. */
+export function bossGroups(runs: Run[], countQuits: boolean): BossGroup[] {
+  const groups = new Map<number, BossGroup>();
+  const get = (id: number) => {
+    let g = groups.get(id);
+    if (!g) groups.set(id, (g = { ...winGroup(String(id), bossName(id)), bossId: id, floors: [], killedYou: 0 }));
+    return g;
+  };
+  for (const r of runs) {
+    const seen = new Set<number>();
+    for (const f of r.floors) {
+      for (const b of f.bosses ?? []) {
+        const g = get(b.bossId);
+        const label = floorName(f.stage, f.stageType, isGreed(r));
+        const fl = g.floors.find((x) => x.label === label);
+        if (fl) fl.count++;
+        else g.floors.push({ key: label, label, count: 1, order: floorOrder(f.stage, f.stageType) });
+        if (!seen.has(b.bossId)) addRun(g, r, countQuits);
+        seen.add(b.bossId);
+      }
+    }
+    // the killer is an entity, not a BossType: match it by name
+    const k = r.result.type === "death" ? r.result.killedBy : undefined;
+    if (k?.boss && k.name) {
+      const id = [...groups.keys(), ...BOSS_IDS].find((i) => bossName(i).toLowerCase() === k.name!.toLowerCase());
+      if (id !== undefined) get(id).killedYou++;
+    }
+  }
+  const list = finish(groups.values());
+  for (const g of list) g.floors.sort((a, b) => b.count - a.count || (a.order ?? 0) - (b.order ?? 0));
+  return list;
 }
 
 function countBy(runs: Run[], pick: (r: Run) => { key: string; label: string; order?: number } | null): CountGroup[] {
