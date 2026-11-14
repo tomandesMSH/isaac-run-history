@@ -92,6 +92,7 @@ local function floor_entry()
     stageType = level:GetStageType(),
     curses = level:GetCurses(),
     enteredAtFrame = run_frames(),
+    stats = read_stats(main_player()),
     bosses = {},
   }
 end
@@ -238,7 +239,7 @@ local function finalize(run, kind, opts)
   log(string.format("recorded run %s: %s%s", run.id, kind, opts.ending and (" (" .. opts.ending .. ")") or ""))
   if notify then
     local what = kind == "win" and ("win, " .. (opts.ending or "?")) or kind
-    notify("Run History: run #" .. #storage.runs .. " saved (" .. what .. ")", 0)
+    notify("Run History: run #" .. storage.count() .. " saved (" .. what .. ")", 0)
   end
 end
 
@@ -280,6 +281,25 @@ end
 -- Callbacks
 ------------------------------------------------------------------------------------------------
 
+local function clock(frames)
+  local s = math.floor((frames or 0) / 30)
+  local h, m = math.floor(s / 3600), math.floor(s / 60) % 60
+  return h > 0 and string.format("%d:%02d:%02d", h, m, s % 60) or string.format("%d:%02d", m, s % 60)
+end
+
+-- "Azazel: 12 runs - 42% won - best win 18:32 - win streak 2", from the summary (no runs decoded)
+local function show_record(p)
+  local sum = storage.summary
+  local c = sum and sum.byCharacter and sum.byCharacter[tostring(p:GetPlayerType())]
+  if not (notify and c and (c.runs or 0) > 0) then return end
+  local parts = { string.format("%s: %d run%s", names.player(p:GetPlayerType()), c.runs, c.runs == 1 and "" or "s") }
+  local decided = (c.wins or 0) + (c.deaths or 0)
+  if decided > 0 then parts[#parts + 1] = string.format("%d%% won", math.floor(100 * (c.wins or 0) / decided + 0.5)) end
+  if c.bestWin then parts[#parts + 1] = "best win " .. clock(c.bestWin) end
+  if (sum.streak or 0) > 1 then parts[#parts + 1] = "win streak " .. sum.streak end
+  notify(table.concat(parts, " - "), 0)
+end
+
 local function on_game_started(_, continued)
   local p = main_player()
   local seed = game:GetSeeds():GetStartSeed()
@@ -299,7 +319,7 @@ local function on_game_started(_, continued)
       finalize(stale, kind)
     end
     new_run(continued)
-    if continued then log("continued a run that wasn't recorded from the start") end
+    if continued then log("continued a run that wasn't recorded from the start") else show_record(p) end
   end
   ready = true
   snapshot()
@@ -398,7 +418,7 @@ local function on_clean_award()
   bossRooms[key] = true
   local floor = cur.floors[#cur.floors]
   for _, id in ipairs({ room:GetBossID(), room:GetSecondBossID() }) do
-    if id and id > 0 then floor.bosses[#floor.bosses + 1] = { bossId = id } end
+    if id and id > 0 then floor.bosses[#floor.bosses + 1] = { bossId = id, frame = run_frames() } end
   end
   snapshot()
   checkpoint()

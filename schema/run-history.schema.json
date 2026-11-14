@@ -27,6 +27,38 @@
     "exportedAt": {
       "$ref": "#/$defs/timestamp"
     },
+    "summary": {
+      "type": "object",
+      "description": "Kept by the mod (1.4+) so it doesn't have to read every run: run count, current win streak, and per character (PlayerType as a string key) runs, wins, deaths and the fastest win in frames",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "streak": {
+          "type": "integer"
+        },
+        "byCharacter": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "runs": {
+                "type": "integer"
+              },
+              "wins": {
+                "type": "integer"
+              },
+              "deaths": {
+                "type": "integer"
+              },
+              "bestWin": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
     "current": {
       "description": "The run in progress at the last checkpoint. Not a finished run; the web page ignores it.",
       "anyOf": [
@@ -312,9 +344,17 @@
                     "bossId": {
                       "type": "integer",
                       "description": "Room:GetBossID() (BossType)"
+                    },
+                    "frame": {
+                      "type": "integer",
+                      "description": "Run time when the boss room was cleared (mod 1.4+)"
                     }
                   }
                 }
+              },
+              "stats": {
+                "$ref": "#/$defs/stats",
+                "description": "Stats when the floor was entered (mod 1.4+)"
               }
             }
           }
@@ -401,29 +441,7 @@
           }
         },
         "stats": {
-          "type": "object",
-          "properties": {
-            "damage": {
-              "type": "number"
-            },
-            "tears": {
-              "type": "number",
-              "description": "Shots per second, 30 / (MaxFireDelay + 1)"
-            },
-            "speed": {
-              "type": "number"
-            },
-            "range": {
-              "type": "number",
-              "description": "TearRange / 40, as on the HUD"
-            },
-            "shotSpeed": {
-              "type": "number"
-            },
-            "luck": {
-              "type": "number"
-            }
-          }
+          "$ref": "#/$defs/stats"
         },
         "shareSeedCode": {
           "type": "string",
@@ -478,6 +496,31 @@
               "type": "string"
             }
           }
+        }
+      }
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "damage": {
+          "type": "number"
+        },
+        "tears": {
+          "type": "number",
+          "description": "Shots per second, 30 / (MaxFireDelay + 1)"
+        },
+        "speed": {
+          "type": "number"
+        },
+        "range": {
+          "type": "number",
+          "description": "TearRange / 40, as on the HUD"
+        },
+        "shotSpeed": {
+          "type": "number"
+        },
+        "luck": {
+          "type": "number"
         }
       }
     }

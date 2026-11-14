@@ -43,8 +43,9 @@ local function line(i, r)
 end
 
 local function recent_lines()
-  local t, n = {}, #storage.runs
-  for i = n, math.max(1, n - LIST_SIZE + 1), -1 do t[#t + 1] = line(i, storage.runs[i]) end
+  local all = storage.runs()
+  local t, n = {}, #all
+  for i = n, math.max(1, n - LIST_SIZE + 1), -1 do t[#t + 1] = line(i, all[i]) end
   if #t == 0 then t[1] = "No finished runs yet." end
   local c = recorder.current()
   if c then
@@ -55,7 +56,7 @@ local function recent_lines()
 end
 
 local function detail(i)
-  local r = storage.runs[i]
+  local r = storage.runs()[i]
   if not r then return "No run #" .. tostring(i) end
   local out = { line(i, r), "seed " .. tostring(r.seed) .. (r.shareSeedCode and ("   ShareSeed " .. r.shareSeedCode) or "") }
   local greed = r.difficulty == "greed" or r.difficulty == "greedier"
@@ -83,7 +84,7 @@ local function export()
   local data = storage.serialize()
   local ok = Isaac.SetClipboard and Isaac.SetClipboard(data)
   if ok == false then return "Couldn't copy to the clipboard. Upload the file instead: " .. storage.file_path() end
-  return string.format("Copied %d run(s) (%d kB) to the clipboard. Same data is in %s", #storage.runs,
+  return string.format("Copied %d run(s) (%d kB) to the clipboard. Same data is in %s", storage.count(),
     math.ceil(#data / 1024), storage.file_path())
 end
 
@@ -96,7 +97,7 @@ local function diag()
   t[#t + 1] = "trinket 1: " .. tostring(names.trinket(1))
   t[#t + 1] = "player 0: " .. tostring(names.player(0))
   t[#t + 1] = "entity 20.0 (Monstro): " .. tostring(names.entity(20, 0, 0))
-  t[#t + 1] = "save slot: " .. tostring(storage.slot) .. "   runs: " .. #storage.runs
+  t[#t + 1] = "save slot: " .. tostring(storage.slot) .. "   runs: " .. storage.count()
   t[#t + 1] = "ShareSeed: " .. (SHARESEED_API and "installed" or "not found")
   local life = storage.collectLifetime and storage.collectLifetime()
   if life then
@@ -122,7 +123,7 @@ rh diag                check what this game/REPENTOGON version provides
 
 local function handle(sub, rest)
   if sub == "" or sub == "list" then return recent_lines()
-  elseif sub == "info" then return detail(tonumber(rest) or #storage.runs)
+  elseif sub == "info" then return detail(tonumber(rest) or storage.count())
   elseif sub == "export" then return export()
   elseif sub == "path" then return storage.file_path()
   elseif sub == "diag" then return diag()
@@ -162,6 +163,13 @@ end
 local frame = 0
 local function refresh_window()
   if not ImGui or not ImGui.ElementExists(W) then return end
+  -- a closed window doesn't need the run list (which decodes every run); when this REPENTOGON
+  -- can't tell, the list is kept up to date as before
+  local okV, visible = pcall(ImGui.IsVisible, W)
+  if okV and visible == false then
+    shownVersion = nil
+    return
+  end
   frame = frame + 1
   -- the run in progress changes all the time; redraw it twice a second
   if storage.version ~= shownVersion or (recorder.current() and frame % 30 == 0) then

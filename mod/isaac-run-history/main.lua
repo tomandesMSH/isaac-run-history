@@ -8,7 +8,7 @@
 --   scripts/ui.lua        console command and ImGui window
 --   scripts/lifetime.lua  totals from the game's own save (bestiary, marks, collection, counters)
 
-local VERSION = "1.3.1"
+local VERSION = "1.4"
 
 local mod = RegisterMod("Isaac Run History", 1)
 
@@ -67,7 +67,7 @@ pcall(recorder.resume_after_reload)
 
 RUN_HISTORY_API = {
   version = VERSION,
-  runs = function() return storage.runs end,
+  runs = function() return storage.runs() end,
   current = recorder.current,
   export = storage.serialize,
 }
