@@ -213,6 +213,8 @@ main:focus { outline: none; }
 .page { display: flex; flex-direction: column; gap: 1.6rem; }
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .page-head h1 { color: var(--paper-light); text-shadow: 4px 4px 0 #000; }
+.page-note { margin: -0.4rem 0 0; color: var(--on-floor-muted); text-shadow: 2px 2px 0 #000; font-size: 0.9rem; }
+.page-note a { color: var(--paper-light); }
 
 .toolbar { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; align-items: center; }
 .toolbar label { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--block); font-size: 0.75rem; text-transform: uppercase; }

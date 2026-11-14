@@ -94,6 +94,8 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
 
   return h("div", { class: "page" },
     h("div", { class: "page-head" }, h("h1", null, "Statistics"), controls),
+    h("p", { class: "page-note" }, "Only runs recorded since you installed the mod show here. For your whole save's totals, see ",
+      h("a", { href: "#/lifetime" }, "Lifetime"), "."),
     kpis,
     h("div", { class: "grid" },
       card("Win rate by character", charTable),

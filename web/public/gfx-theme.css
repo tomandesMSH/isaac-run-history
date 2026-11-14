@@ -22,7 +22,7 @@
     #2a2220;
 }
 .has-gfx * { image-rendering: pixelated; }
-.has-gfx .small, .has-gfx .kpi-sub, .has-gfx .card-note, .has-gfx .muted { font-size: var(--tm); }
+.has-gfx .small, .has-gfx .kpi-sub, .has-gfx .card-note, .has-gfx .muted, .has-gfx .page-note { font-size: var(--tm); }
 .has-gfx h1, .has-gfx h2, .has-gfx h3 { font-weight: 400; letter-spacing: 0; }
 .has-gfx h1 { font-size: calc(var(--up) * 3); }
 .has-gfx h2 { font-size: calc(var(--up) * 2); }
