@@ -58,11 +58,15 @@ async function importText(text: string, source: string, quiet = false): Promise<
     if (parsed.lifetime) {
       life = (await saveLifetime(parsed.lifetime)) ? ", lifetime stats updated" : ", lifetime stats older than the ones here";
       state.lifetimes = await loadLifetimes();
-      state.lifetimeSlot = parsed.lifetime.slot;
+      // a background read shouldn't switch away from the slot being looked at
+      if (!quiet || !state.lifetimeSlot) state.lifetimeSlot = parsed.lifetime.slot;
     }
     const slot = parsed.saveSlot ? ` (save slot ${parsed.saveSlot})` : "";
     if (!quiet || added) toast(`${source}${slot}: ${added} new run${added === 1 ? "" : "s"}${updated ? `, ${updated} already here` : ""}${life}.`);
+    // a background read keeps the reader where they were on the page
+    const y = window.scrollY;
     render();
+    if (quiet) window.scrollTo(0, y);
   } catch (e) {
     toast(`${source}: ${(e as Error).message}`, "error");
   }
