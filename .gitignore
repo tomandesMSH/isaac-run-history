@@ -1,0 +1,8 @@
+node_modules/
+web/dist/
+*.log
+
+__pycache__/
+
+# The soundtracks (Repentance+ / Antibirth) stay out of git; copy them to web/public/mus/ and run tools/music_manifest.py
+web/public/mus/

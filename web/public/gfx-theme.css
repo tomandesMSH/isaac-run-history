@@ -1,0 +1,292 @@
+/*
+  Game look, loaded only when tools/extract_assets.py has put the game's graphics in gfx/
+  (see loadGameGraphics in src/main.ts). Everything is scoped to body.has-gfx and drawn at whole
+  multiples of the sprites' pixels so they stay sharp.
+*/
+
+@font-face { font-family: "TeamMeat"; src: url("gfx/fonts/teammeat.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Upheaval"; src: url("gfx/fonts/upheaval.ttf") format("truetype"); font-display: block; }
+
+/* TeamMeat is drawn on a 25px grid, Upheaval on 18px: sizes below are whole multiples of those */
+.has-gfx {
+  --pixel: "TeamMeat", "Pixelify Sans", monospace;
+  --block: "Upheaval", "Silkscreen", monospace;
+  --tm: 25px;
+  --up: 18px;
+  --wall-size: 120px;
+  font-size: var(--tm);
+  line-height: 1.15;
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 40%, rgb(10 3 2 / 0.5) 100%) fixed,
+    var(--floor-img) 0 0 / 696px 384px fixed,
+    #2a2220;
+}
+.has-gfx * { image-rendering: pixelated; }
+.has-gfx .small, .has-gfx .kpi-sub, .has-gfx .card-note, .has-gfx .muted { font-size: var(--tm); }
+.has-gfx h1, .has-gfx h2, .has-gfx h3 { font-weight: 400; letter-spacing: 0; }
+.has-gfx h1 { font-size: calc(var(--up) * 3); }
+.has-gfx h2 { font-size: calc(var(--up) * 2); }
+.has-gfx h3 { font-size: calc(var(--up) * 2); }
+
+/* ---------- the room ---------- */
+
+@media (min-width: 1100px) {
+  .has-gfx .room-wall {
+    background: none;
+    -webkit-mask: none; mask: none;
+    padding: 0;
+    border: var(--wall-size) solid transparent;
+    border-image: var(--room-img) 60 / var(--wall-size) round;
+  }
+  .has-gfx::after { display: none; }
+}
+.has-gfx .door {
+  width: 96px; height: 128px;
+  border: 0; box-shadow: none;
+  background: var(--door-left) center / 96px 128px no-repeat;
+}
+.has-gfx .door-left { left: 34px; }
+.has-gfx .door-right { right: 34px; left: auto; background-image: var(--door-right); }
+
+/* ---------- top bar ---------- */
+
+.has-gfx .topbar { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.has-gfx .brand { font-family: var(--block); font-weight: 400; font-size: calc(var(--up) * 2); text-shadow: 3px 3px 0 #000; }
+.has-gfx .nav a, .has-gfx .btn {
+  font-family: var(--pixel); font-size: var(--tm); text-transform: none; font-weight: 400;
+  padding: 0 0.3rem;
+  border: 12px solid transparent;
+  border-image: url("gfx/card.png") 6 fill / 12px stretch;
+  filter: none;
+  text-shadow: none;
+}
+.has-gfx .nav a { opacity: 0.6; color: var(--ink); }
+.has-gfx .nav a.active, .has-gfx .nav a:hover { opacity: 1; }
+.has-gfx .nav a.active { color: var(--title-red); }
+.has-gfx .btn-primary { color: var(--title-red); }
+.has-gfx .btn-small { font-size: var(--tm); border-width: 8px; border-image-width: 8px; padding: 0 0.15rem; }
+.has-gfx .btn:hover { transform: rotate(-2deg); }
+
+/* ---------- paper ---------- */
+
+.has-gfx .card, .has-gfx .table-wrap, .has-gfx .run-sheet, .has-gfx .empty {
+  border: 32px solid transparent;
+  border-image: url("gfx/paper.png") 16 fill / 32px stretch;
+  filter: drop-shadow(0 6px 0 rgb(0 0 0 / 0.35));
+  padding: 0 6px 4px;
+}
+.has-gfx .dialog, .has-gfx .toast, .has-gfx .menu-list {
+  border: 28px solid transparent;
+  border-image: url("gfx/popup.png") 14 fill / 28px stretch;
+  filter: drop-shadow(0 6px 0 rgb(0 0 0 / 0.4));
+  padding: 0 6px;
+}
+.has-gfx .card-head h2, .has-gfx .run-head h1, .has-gfx .empty h1, .has-gfx .dialog h2 { color: var(--title-red); }
+.has-gfx .run-head h1 { font-size: calc(var(--up) * 3); }
+
+/* small notes for the numbers */
+.has-gfx .kpi { filter: drop-shadow(0 5px 0 rgb(0 0 0 / 0.35)); padding: 22px 20px 20px; }
+.has-gfx .kpi::before {
+  clip-path: none;
+  background: none;
+  box-sizing: border-box;
+  border: 24px solid transparent;
+  border-image: url("gfx/note.png") 12 fill / 24px stretch;
+}
+.has-gfx .kpi-label { font-family: var(--pixel); font-size: var(--tm); text-transform: none; }
+.has-gfx .kpi-value { font-weight: 400; font-size: calc(var(--up) * 3); line-height: 1; margin: 0.15rem 0; }
+
+/* page titles on a torn strip */
+.has-gfx .page-head h1 {
+  color: var(--ink);
+  text-shadow: none;
+  padding: 0 14px;
+  border: 12px solid transparent;
+  border-image: url("gfx/card.png") 6 fill / 12px stretch;
+  filter: drop-shadow(0 5px 0 rgb(0 0 0 / 0.4));
+  transform: rotate(-1deg);
+}
+.has-gfx .toolbar label, .has-gfx .meta dt, .has-gfx .stat dt, .has-gfx .table thead th {
+  font-family: var(--pixel); font-size: var(--tm); text-transform: none;
+}
+.has-gfx .page > .toolbar label, .has-gfx .page-head .toolbar label, .has-gfx .back { font-size: var(--tm); text-shadow: 2px 2px 0 #000; }
+.has-gfx .back { font-family: var(--pixel); text-transform: none; }
+.has-gfx select, .has-gfx input[type="search"], .has-gfx input[type="number"] { font-size: var(--tm); line-height: 1; }
+.has-gfx .stat dd { font-weight: 400; font-size: calc(var(--up) * 2); }
+
+/* ---------- tables ---------- */
+
+.has-gfx .table th, .has-gfx .table td { padding: 0.15rem 0.4rem; border-bottom: 2px dashed var(--line); }
+.has-gfx .table thead th { border-bottom: 2px solid var(--ink); color: var(--ink-muted); }
+
+/* boss health bar, skull and all */
+.has-gfx .bar {
+  height: 20px;
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 6px 6px 6px 22px;
+  border-image: url("gfx/bar.png") 6 6 6 22 fill / 6px 6px 6px 22px stretch;
+}
+.has-gfx .bar-label {
+  position: absolute; left: 4px; top: -6px;
+  padding: 0;
+  font-family: var(--block); font-size: var(--up); line-height: 20px;
+}
+
+/* ---------- items, results ---------- */
+
+.has-gfx .item {
+  font-size: var(--tm);
+  background: none; border: 0; box-shadow: none; padding: 0 0.2rem 0 0;
+  gap: 0.15rem;
+}
+.has-gfx a.item:hover { background: rgb(255 255 255 / 0.25); }
+.has-gfx .item-icon { width: 32px; height: 32px; flex: none; }
+.has-gfx .item-muted .item-icon { opacity: 0.45; }
+.has-gfx .badge { font-family: var(--pixel); font-size: var(--tm); text-transform: none; }
+.has-gfx .badge::before { content: "("; }
+.has-gfx .badge::after { content: ")"; }
+.has-gfx .item-list { gap: 0.2rem 0.9rem; }
+.has-gfx .result, .has-gfx .chip { font-family: var(--block); font-weight: 400; font-size: var(--up); letter-spacing: 0; }
+.has-gfx .run-result .result { font-size: var(--up); }
+.has-gfx .floor-result { font-family: var(--block); font-weight: 400; font-size: calc(var(--up) * 2); text-transform: none; }
+.has-gfx .floor-head h3 { color: var(--ink); }
+
+/* ---------- empty state ---------- */
+
+.has-gfx .dropzone strong { font-family: var(--block); font-weight: 400; font-size: var(--up); text-transform: none; }
+.has-gfx .dropzone { gap: 0.1rem; padding: 0.6rem 1rem; }
+.has-gfx .drop-overlay { font-family: var(--block); font-weight: 400; font-size: calc(var(--up) * 4); text-transform: none; }
+
+/* run detail: sprites at the game's 2x, result line in the game font */
+.has-gfx .item-list .item-icon { width: 64px; height: 64px; margin: -12px -8px -12px -10px; }
+.has-gfx .item-list { gap: 0.6rem 1.2rem; margin-top: 0.7rem; }
+.has-gfx .run-result { font-size: var(--tm); }
+.has-gfx .floor-bosses { font-size: var(--tm); }
+.has-gfx .table-runs td:first-child { white-space: nowrap; }
+.has-gfx .lead { font-size: var(--tm); }
+
+/* ---------- background picker ---------- */
+
+.bg-menu { display: none; }
+.has-gfx .bg-menu { display: block; }
+.bg-list { width: min(480px, calc(100vw - 32px)); max-height: min(70vh, 620px); overflow-y: auto; overflow-x: hidden; display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.3rem; }
+.bg-option { display: flex; align-items: center; gap: 0.45rem; padding: 0.2rem 0.3rem; font-size: var(--tm); white-space: nowrap; }
+.bg-swatch { width: 28px; height: 28px; flex: none; border: 2px solid var(--ink); background-size: 87px 48px; background-position: center; }
+.bg-option[aria-pressed="true"] { color: var(--title-red); }
+.bg-option[aria-pressed="true"] .bg-swatch { outline: 2px solid var(--title-red); outline-offset: 1px; }
+
+/* ---------- props in the room's corners (fires, chests, rocks) ---------- */
+
+.deco { display: none; }
+@media (min-width: 1100px) {
+  .has-gfx .deco {
+    display: block;
+    position: fixed;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    filter: drop-shadow(0 6px 0 rgb(0 0 0 / 0.3));
+  }
+  .has-gfx .deco-tl { left: calc(var(--wall-size) + 28px); top: calc(var(--wall-size) + 20px); }
+  .has-gfx .deco-tr { right: calc(var(--wall-size) + 28px); top: calc(var(--wall-size) + 20px); }
+  .has-gfx .deco-bl { left: calc(var(--wall-size) + 28px); bottom: calc(var(--wall-size) + 20px); }
+  .has-gfx .deco-br { right: calc(var(--wall-size) + 28px); bottom: calc(var(--wall-size) + 20px); }
+  /* animated strips (fires): step through the frames */
+  .has-gfx .deco.animated { animation: deco-frames 0.6s steps(var(--frames)) infinite; }
+  .has-gfx .deco-tr.animated { animation-delay: -0.2s; }
+  .has-gfx .deco-bl.animated { animation-delay: -0.4s; }
+  .has-gfx .deco-br.animated { animation-delay: -0.1s; }
+}
+@keyframes deco-frames { to { background-position: calc(-1 * var(--strip-w)) 0; } }
+@media (prefers-reduced-motion: reduce) { .has-gfx .deco.animated { animation: none; } }
+
+/* ---------- room below the top bar, the game's light falloff, details on the walls ---------- */
+
+.room-shade { display: none; }
+@media (min-width: 1100px) {
+  .has-gfx .room-wall { top: var(--room-top, 0px); }
+  .has-gfx .door { top: calc(var(--room-top, 0px) + (100vh - var(--room-top, 0px)) / 2); }
+  .has-gfx .deco-tl, .has-gfx .deco-tr { top: calc(var(--room-top, 0px) + var(--wall-size) + 20px); }
+  /* shading.png covers the room 13px in from its edge; its walls end 52px further in */
+  .has-gfx .room-shade {
+    display: block;
+    position: absolute;
+    inset: calc(26px - var(--wall-size));
+    border: 104px solid transparent;
+    border-image: url("gfx/shading.png") 52 fill / 104px stretch;
+    pointer-events: none;
+  }
+  .has-gfx .detail { position: fixed; background-repeat: no-repeat; background-position: 0 0; pointer-events: none; }
+  .has-gfx .detail.animated { animation: deco-frames var(--duration) steps(var(--frames)) infinite; }
+}
+@media (prefers-reduced-motion: reduce) { .has-gfx .detail.animated { animation: none; } }
+
+/* ---------- wet floors (Downpour, Dross, Flooded Caves): light moving in the water ---------- */
+
+.room-water { display: none; }
+@media (min-width: 1100px) {
+  .has-gfx.wet-floor .room-water {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      url("gfx/caustics.png") 0 0 / 512px 512px,
+      url("gfx/caustics.png") 0 0 / 768px 768px,
+      linear-gradient(115deg, transparent 20%, rgb(255 255 255 / 0.07) 38%, rgb(255 255 255 / 0.1) 46%, transparent 64%);
+    mix-blend-mode: screen;
+    opacity: 0.9;
+    animation: water-drift 60s linear infinite;
+  }
+}
+@keyframes water-drift {
+  to { background-position: 512px 512px, -768px 768px, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) { .has-gfx.wet-floor .room-water { animation: none; } }
+
+/* ---------- music panel: the game's own Options sprites, at 2x ---------- */
+
+.has-gfx .music-panel {
+  left: 50%; right: auto; transform: translateX(-50%);
+  border: 16px solid transparent;
+  border-image: url("gfx/card.png") 6 fill / 16px stretch;
+  padding: 0.3rem 0.5rem 0.2rem;
+}
+.has-gfx .music-row { gap: 14px; }
+.has-gfx .music-play {
+  width: 36px; height: 44px; clip-path: none;
+  background: url("gfx/ui/music-arrow.png") 0 0 / 36px 44px no-repeat;
+}
+.has-gfx .music-play.is-playing {
+  background: linear-gradient(90deg, rgb(54 47 45) 0 10px, transparent 10px 22px, rgb(54 47 45) 22px 32px, transparent 32px) 2px 6px / 34px 32px no-repeat;
+}
+.has-gfx .music-label {
+  width: 120px; height: 40px; font-size: 0; color: transparent;
+  background: url("gfx/ui/music-label.png") 0 0 / 120px 40px no-repeat;
+}
+/* the slider is one sprite per level (0-10); the ten bars stay on top as click targets */
+.has-gfx .music-volume {
+  width: 128px; height: 32px; gap: 0; padding: 0 0 0 4px;
+  background: url("gfx/ui/music-volume.png") 0 calc(var(--level, 0) * -32px) / 128px 352px no-repeat;
+}
+.has-gfx .vol-bar { width: 12px; height: 32px; background: none !important; transform: none; border-radius: 0; }
+.has-gfx .vol-bar:hover { outline: none; background: rgb(155 20 16 / 0.15) !important; }
+.has-gfx .music-soundtrack { justify-content: flex-start; gap: 1.4rem; margin: 0.35rem 0 0 50px; }
+.has-gfx .music-soundtrack-option {
+  font-family: var(--pixel); font-weight: 400; font-size: var(--tm); text-transform: uppercase;
+  color: rgb(54 47 45 / 0.38); text-decoration: none; position: relative; padding-left: 0;
+}
+.has-gfx .music-soundtrack-option[aria-checked="true"] { color: rgb(54 47 45); text-decoration: none; }
+.has-gfx .music-soundtrack-option[aria-checked="true"]::before {
+  content: ""; position: absolute; left: -24px; top: 50%; width: 18px; height: 22px; transform: translateY(-55%);
+  background: url("gfx/ui/music-arrow.png") 0 0 / 18px 22px no-repeat;
+}
+.has-gfx .music-soundtrack-option:hover { color: var(--title-red); }
+.has-gfx .btn-icon { padding: 0 0.2rem; }
+
+.has-gfx .marks thead .mark-col { font-size: var(--tm); }
+.has-gfx .mark { font-family: var(--block); font-weight: 400; font-size: var(--up); }
+.has-gfx .collection-missing .item { font-size: var(--tm); }

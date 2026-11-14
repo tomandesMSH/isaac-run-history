@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tomandes.eu/isaac-run-history/run-history.schema.json",
+  "title": "Isaac Run History export",
+  "description": "Written by the Isaac Run History mod into <Isaac>/data/isaac-run-history/saveN.dat and copied to the clipboard by `rh export`. Optional fields are left out instead of being null.",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "runs"
+  ],
+  "properties": {
+    "format": {
+      "const": "isaac-run-history"
+    },
+    "version": {
+      "const": 1
+    },
+    "modVersion": {
+      "type": "string"
+    },
+    "saveSlot": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "exportedAt": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "current": {
+      "description": "The run in progress at the last checkpoint. Not a finished run; the web page ignores it.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/run"
+        }
+      ]
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/run"
+      }
+    },
+    "lifetime": {
+      "description": "Totals from the game's own save (persistentgamedata<slot>.dat), refreshed on every save. Cover the whole save, not only recorded runs.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "takenAt": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "counters": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "description": "Non-zero EventCounter values by enum name (DEATHS, MOM_KILLS, BEST_STREAK, ...); PROGRESSION_*, UNKNOWN_* and ONLINE_SIN_* are left out"
+            },
+            "marks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "PlayerType"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "marks": {
+                    "type": "object",
+                    "description": "Isaac.GetCompletionMarks: MomsHeart, Isaac, Satan, BossRush, BlueBaby, Lamb, MegaSatan, UltraGreed, UltraGreedier, Hush, Delirium, Mother, Beast; 0 none, 1 normal, 2 hard",
+                    "additionalProperties": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "bestiary": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "integer"
+                  },
+                  "variant": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "kills": {
+                    "type": "integer"
+                  },
+                  "deaths": {
+                    "type": "integer",
+                    "description": "times it killed the player"
+                  },
+                  "encounters": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "collection": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "collectibles that can be collected (not hidden)"
+                },
+                "have": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "missing": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "description": "UTC, ISO 8601 (2026-11-14T17:20:03Z)"
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "id",
+        "seed",
+        "seedNum",
+        "character",
+        "difficulty",
+        "floors",
+        "items",
+        "trinkets"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "<start seed>-<unix start time>-<character id>; unique, used to merge imports"
+        },
+        "startedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "endedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "durationFrames": {
+          "type": "integer",
+          "description": "In-game run time (Game.TimeCounter), 30 per second"
+        },
+        "seed": {
+          "type": "string",
+          "description": "Seed as shown in game, e.g. \"8KQ2 XWNL\""
+        },
+        "seedNum": {
+          "type": "integer"
+        },
+        "customSeed": {
+          "type": "boolean",
+          "description": "Seed typed in by the player (no achievements)"
+        },
+        "partial": {
+          "type": "boolean",
+          "description": "Recording started mid-run; items before that have floor 0"
+        },
+        "character": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "PlayerType"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "difficulty": {
+          "enum": [
+            "normal",
+            "hard",
+            "greed",
+            "greedier"
+          ]
+        },
+        "challenge": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Challenge enum value; absent = no challenge"
+            }
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "win",
+                "death",
+                "quit",
+                "unknown"
+              ],
+              "description": "quit = restarted or left without saving; unknown = the game closed during the run"
+            },
+            "ending": {
+              "type": "string",
+              "description": "CompletionType name of the last completion before the win, e.g. LAMB"
+            },
+            "killedBy": {
+              "$ref": "#/$defs/killer"
+            },
+            "stage": {
+              "type": "integer",
+              "description": "LevelStage the run ended on"
+            },
+            "stageType": {
+              "type": "integer",
+              "description": "StageType (4/5 = Repentance alt path)"
+            }
+          }
+        },
+        "completions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every completion event in the run in order (MOMS_HEART, BOSS_RUSH, HUSH, ...)"
+        },
+        "floors": {
+          "type": "array",
+          "description": "Floors in the order they were played; item.floor indexes into this",
+          "items": {
+            "type": "object",
+            "required": [
+              "stage",
+              "stageType"
+            ],
+            "properties": {
+              "stage": {
+                "type": "integer"
+              },
+              "stageType": {
+                "type": "integer"
+              },
+              "curses": {
+                "type": "integer",
+                "description": "LevelCurse bit flags"
+              },
+              "enteredAtFrame": {
+                "type": "integer"
+              },
+              "bosses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "bossId"
+                  ],
+                  "properties": {
+                    "bossId": {
+                      "type": "integer",
+                      "description": "Room:GetBossID() (BossType)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "Collectibles in the order they were picked up",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "floor"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "CollectibleType"
+              },
+              "name": {
+                "type": "string",
+                "description": "English name, or a string-table key (#..._NAME) when it couldn't be resolved"
+              },
+              "floor": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "frame": {
+                "type": "integer"
+              },
+              "roomType": {
+                "type": "integer",
+                "description": "RoomType the item was picked up in"
+              },
+              "pool": {
+                "type": "integer",
+                "description": "ItemPoolType of the last pool the game drew from"
+              },
+              "starting": {
+                "type": "boolean"
+              },
+              "removed": {
+                "type": "boolean",
+                "description": "Lost later (rerolled, swapped out, taken away)"
+              },
+              "removedFloor": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "trinkets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "floor"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "TrinketType without the golden flag"
+              },
+              "name": {
+                "type": "string"
+              },
+              "golden": {
+                "type": "boolean"
+              },
+              "floor": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "frame": {
+                "type": "integer"
+              },
+              "starting": {
+                "type": "boolean"
+              },
+              "smelted": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "damage": {
+              "type": "number"
+            },
+            "tears": {
+              "type": "number",
+              "description": "Shots per second, 30 / (MaxFireDelay + 1)"
+            },
+            "speed": {
+              "type": "number"
+            },
+            "range": {
+              "type": "number",
+              "description": "TearRange / 40, as on the HUD"
+            },
+            "shotSpeed": {
+              "type": "number"
+            },
+            "luck": {
+              "type": "number"
+            }
+          }
+        },
+        "shareSeedCode": {
+          "type": "string",
+          "description": "ShareSeed code of the run, when ShareSeed is installed"
+        },
+        "shareSeedRun": {
+          "type": "boolean",
+          "description": "The run was played from someone else's ShareSeed code"
+        }
+      }
+    },
+    "killer": {
+      "type": "object",
+      "description": "Last thing that hurt the player before the death. type 0 = no entity (spikes, curse room door, IV Bag, ...)",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "integer"
+        },
+        "variant": {
+          "type": "integer"
+        },
+        "subType": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "boss": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "integer",
+          "description": "DamageFlag bits of the hit"
+        },
+        "via": {
+          "type": "object",
+          "description": "The projectile/bomb/laser that hit, when the killer is its spawner",
+          "properties": {
+            "type": {
+              "type": "integer"
+            },
+            "variant": {
+              "type": "integer"
+            },
+            "subType": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

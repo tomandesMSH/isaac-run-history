@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Isaac Run History</name>
+    <directory>isaac-run-history</directory>
+    <description>[h1]Isaac Run History[/h1]
+
+Records every run you play - wins, deaths and restarts - with the items you picked up floor by floor, bosses, the cause of death, final stats and the seed. Export the history as one JSON file and get statistics on [url=https://tomandes.eu]tomandes.eu[/url].
+
+[h2]How to use[/h2]
+Open the console and click [b]Run History[/b] in the menu bar, or use:
+[list]
+[*][b]runhistory[/b] (or [b]rh[/b]) - list your last 10 runs
+[*][b]rh export[/b] - copy the whole history (JSON) to the clipboard
+[*][b]rh path[/b] - where the history file is
+[/list]
+
+[h2]Requirements[/h2]
+[list]
+[*][b]Repentance+[/b] required
+[*][url=https://repentogon.com]REPENTOGON[/url] required
+[*]Works together with ShareSeed (its share code is stored with each run)
+[/list]</description>
+    <version>1.1</version>
+    <visibility>Private</visibility>
+    <tag id="Lua"/>
+    <tag id="Tweaks"/>
+</metadata>

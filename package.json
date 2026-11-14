@@ -1,0 +1,11 @@
+{
+  "name": "isaac-run-history",
+  "private": true,
+  "description": "Runs the web page's scripts from the repo root; the web app itself is in web/.",
+  "scripts": {
+    "postinstall": "npm --prefix web install",
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "preview": "npm --prefix web run preview"
+  }
+}
