@@ -8,6 +8,7 @@ import {
 } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
+import { shareRun } from "../share";
 
 function meta(label: string, value: Node | string): HTMLElement {
   return h("div", { class: "meta" }, h("dt", null, label), h("dd", null, value));
@@ -75,6 +76,18 @@ export function renderRun(run: Run | undefined, onDelete: (run: Run) => void): H
     class: "btn btn-small btn-danger", type: "button",
     onClick: () => { if (confirm("Remove this run from the page? (The file in the game isn't touched.)")) onDelete(run); },
   }, "Remove run");
+  const shareBtn: HTMLButtonElement = h("button", {
+    class: "btn btn-small", type: "button", title: "A PNG picture of this run, to post or send",
+    onClick: async () => {
+      shareBtn.disabled = true;
+      try {
+        shareBtn.textContent = `${await shareRun(run)} ✓`;
+      } catch (e) {
+        shareBtn.textContent = (e as Error).message;
+      }
+      setTimeout(() => { shareBtn.textContent = "Share image"; shareBtn.disabled = false; }, 2500);
+    },
+  }, "Share image");
 
   return h("div", { class: "page" },
     h("p", null, h("a", { href: "#/runs", class: "back" }, "← All runs")),
@@ -83,7 +96,7 @@ export function renderRun(run: Run | undefined, onDelete: (run: Run) => void): H
       h("div", null,
         h("h1", null, characterName(run), h("span", { class: "muted" }, ` · ${difficultyName(run.difficulty)}`)),
         h("p", { class: "run-result" }, resultBadge(run), " ", resultText(run))),
-      deleteBtn),
+      h("div", { class: "run-actions" }, shareBtn, deleteBtn)),
     h("dl", { class: "meta-grid" },
       meta("Started", dateTime(run.startedAt)),
       meta("Run time", duration(run.durationFrames)),

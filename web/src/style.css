@@ -497,3 +497,4 @@ i.chart-win { background: var(--c-win); } i.chart-quit { background: var(--c-qui
 i.heat-0 { background: var(--heat-0); } i.heat-1 { background: var(--heat-1); } i.heat-2 { background: var(--heat-2); }
 i.heat-3 { background: var(--heat-3); } i.heat-4 { background: var(--heat-4); }
 .heat-legend { justify-content: flex-end; gap: 3px; margin-top: 0.3rem; }
+.run-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start; }
