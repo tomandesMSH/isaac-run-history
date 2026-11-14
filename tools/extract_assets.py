@@ -430,6 +430,8 @@ def build_ui(gfx: Path) -> None:
     build_music_ui(gfx)
     ui = gfx / "ui"
     crop(ui / "deedsmenu.png", (7, 224, 311, 436)).save(OUT / "paper.png")       # big folded paper
+    (OUT / "ui").mkdir(parents=True, exist_ok=True)
+    Image.open(ui / "completion_widget.png").convert("RGBA").save(OUT / "ui" / "completion.png")  # completion notes
     crop(ui / "deedsmenu.png", (1, 6, 191, 218)).save(OUT / "note.png")          # small folded paper
     crop(ui / "pausescreen.png", (305, 99, 398, 164)).save(OUT / "card.png")     # blank tan card
     crop(ui / "genericpopup.png", (40, 41, 271, 170)).save(OUT / "popup.png")    # white popup paper

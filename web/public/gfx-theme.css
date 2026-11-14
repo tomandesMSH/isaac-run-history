@@ -303,3 +303,9 @@
 .has-gfx .beast-name { font-weight: 400; }
 .has-gfx .beast-counts { font-size: var(--tm); line-height: 0.9; }
 .has-gfx .beast-floor .muted { font-family: var(--pixel); font-size: var(--tm); }
+.has-gfx .marks-card-name { font-weight: 400; }
+.has-gfx .marks-card-sum { font-size: var(--tm); }
+/* completion notes: the sheet lives next to this file, so the url works under any base path */
+.has-gfx .marks-note, .has-gfx .marks-note-mark {
+  background-image: url("gfx/ui/completion.png"); background-size: calc(384px * var(--s)) auto; background-repeat: no-repeat;
+}

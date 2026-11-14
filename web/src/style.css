@@ -514,3 +514,21 @@ i.heat-3 { background: var(--heat-3); } i.heat-4 { background: var(--heat-4); }
 .input-search { min-width: 10rem; }
 .beast-floor { grid-column: 1 / -1; margin: 0.8rem 0 -0.2rem; border-bottom: 2px solid var(--line); padding-bottom: 0.2rem; }
 .beast-floor:first-child { margin-top: 0; }
+
+/* ---------- completion notes (the game's pinned paper) ---------- */
+
+.marks-notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem 0.4rem; }
+.marks-card, .marks-card:visited { display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--ink); text-decoration: none; }
+.marks-card:hover .marks-card-name { text-decoration: underline; }
+.marks-note {
+  --s: 2; position: relative; width: calc(86px * var(--s)); height: calc(86px * var(--s)); flex: none;
+  background-position: calc(-4px * var(--s)) calc(-4px * var(--s));
+  image-rendering: pixelated;
+}
+.marks-note.tainted { background-position: calc(-4px * var(--s)) calc(-132px * var(--s)); }
+.marks-note-mark {
+  position: absolute; width: calc(16px * var(--s)); height: calc(16px * var(--s)); margin: calc(-4px * var(--s)) 0 0 calc(-4px * var(--s));
+}
+.marks-card-name { font-weight: 700; margin-top: -0.6rem; color: var(--ink); }
+.marks-card-sum { color: var(--ink-muted); font-size: 0.8rem; }
+.marks-card.all-hard .marks-card-sum { color: var(--red); }

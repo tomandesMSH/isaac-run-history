@@ -1,28 +1,13 @@
 // Lifetime page: totals from the game's own save (bestiary, completion marks, item collection,
 // counters). They cover the whole save file, not only the runs the mod recorded.
 
-import { CHARACTERS } from "../data/game";
 import { itemInfo, uiIcon } from "../data/items";
+import { marksView } from "./marks";
 import { bar, card, countUp, emptyNote, h, itemChip } from "../dom";
 import { dateTime, percent } from "../format";
 import type { Lifetime } from "../model/schema";
 
 // Completion marks in the order the game shows them; Greed shows Greedier when that's done.
-const MARK_COLUMNS: { key: string; label: string; short: string }[] = [
-  { key: "MomsHeart", label: "Mom's Heart", short: "Heart" },
-  { key: "Isaac", label: "Isaac", short: "Isaac" },
-  { key: "Satan", label: "Satan", short: "Satan" },
-  { key: "BossRush", label: "Boss Rush", short: "Rush" },
-  { key: "BlueBaby", label: "???", short: "???" },
-  { key: "Lamb", label: "The Lamb", short: "Lamb" },
-  { key: "MegaSatan", label: "Mega Satan", short: "Mega" },
-  { key: "UltraGreed", label: "Greed / Greedier", short: "Greed" },
-  { key: "Hush", label: "Hush", short: "Hush" },
-  { key: "Delirium", label: "Delirium", short: "Deli" },
-  { key: "Mother", label: "Mother", short: "Mother" },
-  { key: "Beast", label: "The Beast", short: "Beast" },
-];
-
 const FINAL_BOSSES: [string, string][] = [
   ["MOM_KILLS", "Mom's Heart"], ["ISAAC_KILLS", "Isaac"], ["SATAN_KILLS", "Satan"],
   ["BLUE_BABY_KILLS", "???"], ["LAMB_KILLS", "The Lamb"], ["MEGA_SATAN_KILLS", "Mega Satan"],
@@ -162,34 +147,6 @@ function kpi(title: string, value: string | number, sub?: string | Node): HTMLEl
     sub ? h("div", { class: "kpi-sub" }, sub) : null);
 }
 
-function markValue(key: string, marks: Record<string, number>): number {
-  if (key === "UltraGreed") return Math.max(marks.UltraGreed ?? 0, (marks.UltraGreedier ?? 0) > 0 ? 2 : 0);
-  return marks[key] ?? 0;
-}
-
-function marksTable(l: Lifetime): HTMLElement {
-  if (l.marks.length === 0) return emptyNote("No completion marks in this export.");
-  return h("div", { class: "table-scroll" }, h("table", { class: "table marks" },
-    h("thead", null, h("tr", null,
-      h("th", { scope: "col" }, "Character"),
-      MARK_COLUMNS.map((c) => h("th", { scope: "col", class: "mark-col", title: c.label }, c.short)),
-      h("th", { scope: "col", class: "num" }, "Done"))),
-    h("tbody", null, l.marks.map((m) => {
-      // the save stores bits (1 = normal, 2 = hard), so a hard win usually reads 3
-      const values = MARK_COLUMNS.map((c) => Math.min(2, markValue(c.key, m.marks)));
-      const done = values.filter((v) => v > 0).length;
-      const hard = values.filter((v) => v >= 2).length;
-      return h("tr", null,
-        h("th", { scope: "row" }, CHARACTERS[m.id] ?? m.name ?? `#${m.id}`),
-        values.map((v, i) => h("td", { class: "mark-cell" },
-          h("span", {
-            class: `mark mark-${v}`,
-            title: `${MARK_COLUMNS[i].label}: ${v === 0 ? "not yet" : v === 1 ? "normal" : "hard"}`,
-          }, v === 0 ? "" : v === 1 ? "N" : "H"))),
-        h("td", { class: "num" }, hard === MARK_COLUMNS.length ? "all hard" : `${done}/${MARK_COLUMNS.length}`));
-    }))));
-}
-
 function countBars(rows: { label: string; value: number }[], kind: "death" | "win" | "neutral"): HTMLElement {
   if (rows.length === 0) return emptyNote("Nothing yet.");
   const max = Math.max(...rows.map((r) => r.value));
@@ -245,7 +202,7 @@ export function renderLifetime(lifetimes: Lifetime[], slot: string | undefined, 
       h("div", { class: "toolbar" }, slotPicker,
         h("span", { class: "muted" }, `from your save, ${dateTime(l.takenAt)}`))),
     kpis,
-    card("Completion marks", marksTable(l), {
+    card("Completion marks", marksView(l), {
       wide: true,
       note: "N = beaten on normal, H = on hard. Greed counts Greedier as hard.",
     }),
