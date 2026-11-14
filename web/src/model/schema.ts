@@ -16,12 +16,17 @@ export interface Killer extends EntityRefInfo {
   via?: EntityRefInfo;
 }
 
+export interface Stats { damage?: number; tears?: number; speed?: number; range?: number; shotSpeed?: number; luck?: number }
+
 export interface Floor {
   stage: number;
   stageType: number;
   curses?: number;
   enteredAtFrame?: number;
-  bosses: { bossId: number }[];
+  /** frame: run time when the boss room was cleared (mod 1.4+) */
+  bosses: { bossId: number; frame?: number }[];
+  /** stats when the floor was entered (mod 1.4+) */
+  stats?: Stats;
 }
 
 export interface ItemPickup {
@@ -63,7 +68,7 @@ export interface Run {
   floors: Floor[];
   items: ItemPickup[];
   trinkets: TrinketPickup[];
-  stats?: { damage?: number; tears?: number; speed?: number; range?: number; shotSpeed?: number; luck?: number };
+  stats?: Stats;
   shareSeedCode?: string;
   shareSeedRun?: boolean;
   /** Added on import: which save slot the run came from. */
@@ -130,7 +135,7 @@ function normalizeRun(raw: unknown, saveSlot?: number): Run | null {
   if (!r || typeof r.id !== "string" || !obj(r.character)) return null;
   const result = obj<Run["result"]>(r.result);
   if (!result || !result.type) return null; // the run in progress has no result
-  const floors = arr<Floor>(r.floors).map((f) => ({ ...f, bosses: arr<{ bossId: number }>(f.bosses) }));
+  const floors = arr<Floor>(r.floors).map((f) => ({ ...f, bosses: arr<Floor["bosses"][number]>(f.bosses), stats: obj<Stats>(f.stats) }));
   return {
     ...(r as unknown as Run),
     challenge: obj<{ id: number }>(r.challenge),

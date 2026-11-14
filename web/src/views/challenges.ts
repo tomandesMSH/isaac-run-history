@@ -5,7 +5,7 @@
 import challengeData from "../data/challenges.json";
 import { CHALLENGES, CHARACTERS, ROOM_TYPES, curseNames } from "../data/game";
 import { itemInfo, trinketInfo } from "../data/items";
-import { emptyNote, h, itemChip } from "../dom";
+import { emptyNote, h, itemChip, wikiLink } from "../dom";
 import type { Lifetime, Run } from "../model/schema";
 import { runsLink } from "../router";
 
@@ -68,7 +68,7 @@ function card(c: Known, done: boolean | undefined, runs: Run[]): HTMLElement {
       h("h3", null, name),
       done !== undefined ? h("span", { class: `chip ${done ? "chip-done" : "chip-todo"}` }, done ? "finished" : "not finished") : null),
     h("div", { class: "chal-meta" },
-      `${CHARACTERS[c.player] ?? `Character #${c.player}`} · ${goal(c)}`),
+      `${CHARACTERS[c.player] ?? `Character #${c.player}`} · ${goal(c)}`, " · ", wikiLink(name)),
     ...rules(c),
     tries.length
       ? h("div", { class: "chal-rule" }, h("a", { href: runsLink({ challenge: String(c.id) }) },

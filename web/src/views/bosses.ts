@@ -3,8 +3,8 @@
 // how often it killed you.
 
 import bossData from "../data/bosses.json";
-import { emptyNote, h } from "../dom";
-import { percent } from "../format";
+import { emptyNote, h, wikiLink } from "../dom";
+import { duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import { bossGroups, type BossGroup } from "../stats/stats";
@@ -43,19 +43,22 @@ function tile(e: Entry, gfx: boolean): HTMLElement {
   const lines = g ? [
     `beaten in ${g.runs} run${g.runs === 1 ? "" : "s"}${g.decided ? ` · ${percent(g.winRate)} won` : ""}`,
     g.floors.slice(0, 2).map((f) => `${f.label}${f.count > 1 ? ` ×${f.count}` : ""}`).join(", "),
+    g.avgKillFrames !== undefined ? `floor cleared to it in ~${duration(g.avgKillFrames)}` : "",
   ] : ["not beaten in a recorded run"];
-  return h("a", {
-    class: `boss${g ? "" : " missing"}`,
-    href: g ? runsLink({ boss: String(e.id) }) : undefined,
-    title: g ? `${e.name}: show the runs` : e.name,
-  },
-  h("div", { class: "boss-portrait" },
-    gfx && e.portrait ? h("img", { src: `gfx/bosses/${e.id}.png`, alt: "", loading: "lazy", width: e.portrait[0], height: e.portrait[1] }) : null),
-  gfx && e.nameImg
-    ? h("img", { class: "boss-nameimg", src: `gfx/bosses/${e.id}-name.png`, alt: e.name, loading: "lazy", width: e.nameImg[0], height: e.nameImg[1] })
-    : h("div", { class: "collect-name" }, e.name),
-  lines.map((l) => (l ? h("div", { class: "collect-meta" }, l) : null)),
-  g?.killedYou ? h("div", { class: "boss-killed" }, `killed you ${g.killedYou}×`) : null);
+  return h("div", { class: `boss${g ? "" : " missing"}` },
+    h("a", {
+      class: "boss-main",
+      href: g ? runsLink({ boss: String(e.id) }) : undefined,
+      title: g ? `${e.name}: show the runs` : e.name,
+    },
+    h("div", { class: "boss-portrait" },
+      gfx && e.portrait ? h("img", { src: `gfx/bosses/${e.id}.png`, alt: "", loading: "lazy", width: e.portrait[0], height: e.portrait[1] }) : null),
+    gfx && e.nameImg
+      ? h("img", { class: "boss-nameimg", src: `gfx/bosses/${e.id}-name.png`, alt: e.name, loading: "lazy", width: e.nameImg[0], height: e.nameImg[1] })
+      : h("div", { class: "collect-name" }, e.name),
+    lines.map((l) => (l ? h("div", { class: "collect-meta" }, l) : null)),
+    g?.killedYou ? h("div", { class: "boss-killed" }, `killed you ${g.killedYou}×`) : null),
+    wikiLink(e.name));
 }
 
 export function renderBosses(runs: Run[], countQuits: boolean): HTMLElement {

@@ -2,7 +2,7 @@
 
 import { ROOM_TYPES, curseNames, endingName, floorName } from "../data/game";
 import { itemInfo, trinketInfo } from "../data/items";
-import { copyButton, emptyNote, h, itemChip, resultBadge } from "../dom";
+import { copyButton, emptyNote, h, itemChip, resultBadge, wikiLink } from "../dom";
 import {
   bossName, challengeName, characterName, dateTime, difficultyName, duration, isGreed, killerName, resultText,
 } from "../format";
@@ -38,7 +38,9 @@ function timeline(run: Run): HTMLElement {
         h("h3", null, floorName(f.stage, f.stageType, greed, f.curses ?? 0)),
         f.enteredAtFrame !== undefined && i > 0 ? h("span", { class: "muted small" }, duration(f.enteredAtFrame)) : null,
         curses.map((c) => h("span", { class: "chip chip-curse" }, c))),
-      f.bosses.length ? h("p", { class: "floor-bosses" }, "Beat ", f.bosses.map((b, j) => [j ? " & " : "", h("a", { href: "#/bosses", title: "All bosses" }, h("strong", null, bossName(b.bossId)))])) : null,
+      f.bosses.length ? h("p", { class: "floor-bosses" }, "Beat ", f.bosses.map((b, j) => [j ? " & " : "", h("a", { href: "#/bosses", title: "All bosses" }, h("strong", null, bossName(b.bossId))),
+        " ", wikiLink(bossName(b.bossId)),
+        b.frame !== undefined && f.enteredAtFrame !== undefined ? h("span", { class: "muted" }, ` at ${duration(b.frame)}`) : null])) : null,
       items.length || trinkets.length
         ? h("div", { class: "item-list" },
           items.map((it) => {

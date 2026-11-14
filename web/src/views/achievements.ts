@@ -2,7 +2,7 @@
 // files: data/achievements.json), unlocked or not (lifetime export from mod 1.2+).
 
 import achievementData from "../data/achievements.json";
-import { emptyNote, h } from "../dom";
+import { emptyNote, h, wikiLink } from "../dom";
 import type { Lifetime } from "../model/schema";
 
 interface Known { id: number; name: string; text: string; how?: string; img?: boolean }
@@ -35,6 +35,7 @@ function achievement(e: Entry): HTMLElement {
   return h("div", { class: `ach${e.unlocked === false ? " locked" : ""}`, title: `#${e.id}` },
     gfx && e.img ? h("img", { class: "ach-img", src: `gfx/achievements/${e.id}.png`, alt: e.text, loading: "lazy", width: 263, height: 176 }) : null,
     h("div", { class: "ach-name" }, e.name, e.unlocked === false ? h("span", { class: "ach-lock" }, " · locked") : null),
+    wikiLink(e.name),
     e.how ? h("div", { class: "ach-how" }, e.how) : null,
     NOTES[e.id] ? h("div", { class: "ach-note" }, NOTES[e.id]) : null);
 }

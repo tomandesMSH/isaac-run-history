@@ -139,3 +139,21 @@ test("parseExport rejects other JSON and reads achievements/challenges", () => {
   assert.deepEqual(p.lifetime?.achievements, [1, 2]);
   assert.deepEqual(p.lifetime?.challenges, []);
 });
+
+test("bosses: average time from entering the floor to clearing the boss room", () => {
+  const floor = (enteredAtFrame: number, frame: number) => ({ stage: 1, stageType: 0, enteredAtFrame, bosses: [{ bossId: 1, frame }] });
+  const runs = [run("win", { floors: [floor(0, 1800)] }), run("death", { floors: [floor(100, 2500)] }), run("death")];
+  const monstro = bossGroups(runs, false).find((g) => g.bossId === 1)!;
+  assert.equal(monstro.avgKillFrames, (1800 + 2400) / 2);
+});
+
+test("parseExport keeps floor stats and boss frames", () => {
+  const p = parseExport(JSON.stringify({
+    format: "isaac-run-history", version: 1, runs: [{
+      id: "x", seed: "A", seedNum: 1, character: { id: 0 }, difficulty: "normal", result: { type: "win" }, items: [], trinkets: [],
+      floors: [{ stage: 1, stageType: 0, stats: { damage: 3.5 }, bosses: [{ bossId: 1, frame: 900 }] }],
+    }],
+  }));
+  assert.equal(p.runs[0].floors[0].stats?.damage, 3.5);
+  assert.equal(p.runs[0].floors[0].bosses[0].frame, 900);
+});

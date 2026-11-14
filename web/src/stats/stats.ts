@@ -175,14 +175,18 @@ export interface BossGroup extends WinGroup {
   floors: CountGroup[];
   /** runs that ended with it killing you */
   killedYou: number;
+  /** average time from entering the floor to clearing its room, when recorded (mod 1.4+) */
+  avgKillFrames?: number;
 }
 
 /** Per boss (BossType): in how many runs it was beaten, how those runs went, where, and how often it killed you. */
 export function bossGroups(runs: Run[], countQuits: boolean): BossGroup[] {
   const groups = new Map<number, BossGroup>();
+  const times = new Map<number, number[]>();
   const get = (id: number) => {
     let g = groups.get(id);
     if (!g) groups.set(id, (g = { ...winGroup(String(id), bossName(id)), bossId: id, floors: [], killedYou: 0 }));
+    times.set(id, times.get(id) ?? []);
     return g;
   };
   for (const r of runs) {
@@ -190,6 +194,9 @@ export function bossGroups(runs: Run[], countQuits: boolean): BossGroup[] {
     for (const f of r.floors) {
       for (const b of f.bosses ?? []) {
         const g = get(b.bossId);
+        if (b.frame !== undefined && f.enteredAtFrame !== undefined && b.frame >= f.enteredAtFrame) {
+          times.get(b.bossId)!.push(b.frame - f.enteredAtFrame);
+        }
         const label = floorName(f.stage, f.stageType, isGreed(r));
         const fl = g.floors.find((x) => x.label === label);
         if (fl) fl.count++;
@@ -206,7 +213,11 @@ export function bossGroups(runs: Run[], countQuits: boolean): BossGroup[] {
     }
   }
   const list = finish(groups.values());
-  for (const g of list) g.floors.sort((a, b) => b.count - a.count || (a.order ?? 0) - (b.order ?? 0));
+  for (const g of list) {
+    g.floors.sort((a, b) => b.count - a.count || (a.order ?? 0) - (b.order ?? 0));
+    const t = times.get(g.bossId) ?? [];
+    if (t.length) g.avgKillFrames = t.reduce((a, b) => a + b, 0) / t.length;
+  }
   return list;
 }
 
