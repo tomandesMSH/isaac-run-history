@@ -25,12 +25,18 @@ function sorted(list: Entry[]): Entry[] {
     .sort(view.sort === "name" ? (a, b) => a.name.localeCompare(b.name) : (a, b) => a.id - b.id);
 }
 
+// Notes the game files don't have
+const NOTES: Record<number, string> = {
+  641: "Can't be unlocked with REPENTOGON installed, so it stays locked for players of this mod.",
+};
+
 function achievement(e: Entry): HTMLElement {
   const gfx = document.body.classList.contains("has-gfx");
   return h("div", { class: `ach${e.unlocked === false ? " locked" : ""}`, title: `#${e.id}` },
     gfx && e.img ? h("img", { class: "ach-img", src: `gfx/achievements/${e.id}.png`, alt: e.text, loading: "lazy", width: 263, height: 176 }) : null,
     h("div", { class: "ach-name" }, e.name, e.unlocked === false ? h("span", { class: "ach-lock" }, " · locked") : null),
-    e.how ? h("div", { class: "ach-how" }, e.how) : null);
+    e.how ? h("div", { class: "ach-how" }, e.how) : null,
+    NOTES[e.id] ? h("div", { class: "ach-note" }, NOTES[e.id]) : null);
 }
 
 export function renderAchievements(lifetimes: Lifetime[], slot: string | undefined): HTMLElement {

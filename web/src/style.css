@@ -617,3 +617,4 @@ a.boss[href]:hover .boss-nameimg, a.boss[href]:hover .collect-name { filter: dro
 .cmp-table td.cmp-better { color: #4b8f2a; font-weight: 700; }
 .cmp-table td.cmp-better::after { content: " ▲"; font-size: 0.7em; }
 .error-text { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--paper-light); background: rgb(0 0 0 / 0.4); padding: 0.6rem; }
+.ach-note { color: var(--title-red); font-size: 0.85em; margin-top: 0.2rem; }
