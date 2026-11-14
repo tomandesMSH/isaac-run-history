@@ -48,6 +48,7 @@ Open the console and click **Run History -> Last runs / export** in the menu bar
 | `rh info N`              | Run #N: items floor by floor, stats, seed                       |
 | `rh export`              | Copy the whole history (JSON) to the clipboard                  |
 | `rh path`                | Where the history file is                                       |
+| `rh web`                 | The statistics page's link (copied to the clipboard)            |
 | `rh diag`                | Check what your game / REPENTOGON version provides (for bug reports) |
 
 ## Where the data is and how to get it to the web page

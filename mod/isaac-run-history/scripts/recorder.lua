@@ -17,6 +17,7 @@ local names, storage -- shared instances, from main.lua
 
 local game = Game()
 local log, notify
+local webTipShown = false
 
 local cur          -- the run being recorded
 local ready = false -- true between MC_POST_GAME_STARTED and the end of that run
@@ -239,7 +240,13 @@ local function finalize(run, kind, opts)
   log(string.format("recorded run %s: %s%s", run.id, kind, opts.ending and (" (" .. opts.ending .. ")") or ""))
   if notify then
     local what = kind == "win" and ("win, " .. (opts.ending or "?")) or kind
-    notify("Run History: run #" .. storage.count() .. " saved (" .. what .. ")", 0)
+    local tip = ""
+    if not webTipShown then
+      -- once per session: where the history turns into statistics
+      webTipShown = true
+      tip = ". Stats: tomandes.eu/isaac-run-history (rh web)"
+    end
+    notify("Run History: run #" .. storage.count() .. " saved (" .. what .. ")" .. tip, 0)
   end
 end
 

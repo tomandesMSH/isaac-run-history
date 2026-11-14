@@ -79,13 +79,22 @@ local function detail(i)
   return table.concat(out, "\n")
 end
 
+-- The statistics page the history file is meant for.
+local WEB = "https://tomandes.eu/isaac-run-history/"
+
+local function web()
+  local ok = Isaac.SetClipboard and Isaac.SetClipboard(WEB)
+  return "Your statistics: " .. WEB .. (ok == false and "" or "  (link copied: paste it into your browser)")
+    .. "\nOpen it and drop " .. storage.file_path() .. " onto the page."
+end
+
 local function export()
   storage.refreshLifetime()
   local data = storage.serialize()
   local ok = Isaac.SetClipboard and Isaac.SetClipboard(data)
   if ok == false then return "Couldn't copy to the clipboard. Upload the file instead: " .. storage.file_path() end
-  return string.format("Copied %d run(s) (%d kB) to the clipboard. Same data is in %s", storage.count(),
-    math.ceil(#data / 1024), storage.file_path())
+  return string.format("Copied %d run(s) (%d kB) to the clipboard. Same data is in %s\nPaste it (or drop the file) at %s",
+    storage.count(), math.ceil(#data / 1024), storage.file_path(), WEB)
 end
 
 -- What this REPENTOGON/game version gives us, for checking a new setup.
@@ -114,10 +123,12 @@ local function diag()
 end
 
 local HELP = [[
+Statistics page: https://tomandes.eu/isaac-run-history/
 runhistory (rh)        your last 10 runs
 rh info N              items floor by floor, stats and seed of run #N
 rh export              copy the whole history (JSON) to the clipboard
 rh path                where the history file is (upload it to the web page)
+rh web                 the statistics page's link (copied to the clipboard)
 rh diag                check what this game/REPENTOGON version provides
 ]]
 
@@ -126,6 +137,7 @@ local function handle(sub, rest)
   elseif sub == "info" then return detail(tonumber(rest) or storage.count())
   elseif sub == "export" then return export()
   elseif sub == "path" then return storage.file_path()
+  elseif sub == "web" then return web()
   elseif sub == "diag" then return diag()
   end
   return HELP
@@ -147,6 +159,8 @@ local function build_window()
   ImGui.LinkWindowToElement(W, "runHistoryMenuOpen")
   ImGui.SetWindowSize(W, 820, 420)
 
+  ImGui.AddText(W, "Your statistics: " .. WEB .. "  (open it and drop the history file onto the page)", true, "runHistoryWeb")
+
   ImGui.AddButton(W, "runHistoryExport", "Export to clipboard", function()
     status = export()
     notify("Run History: " .. status, 1)
@@ -154,6 +168,10 @@ local function build_window()
   ImGui.AddElement(W, "runHistorySame1", ImGuiElement.SameLine)
   ImGui.AddButton(W, "runHistoryPath", "Show file path", function()
     status = "History file: " .. storage.file_path()
+  end, true)
+  ImGui.AddElement(W, "runHistorySame2", ImGuiElement.SameLine)
+  ImGui.AddButton(W, "runHistoryWebLink", "Copy web page link", function()
+    status = web()
   end, true)
   ImGui.AddText(W, "", true, "runHistoryStatus")
   ImGui.AddElement(W, "runHistorySep", ImGuiElement.SeparatorText, "Last " .. LIST_SIZE .. " runs")
