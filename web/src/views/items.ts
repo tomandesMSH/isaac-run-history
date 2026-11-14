@@ -4,7 +4,7 @@
 
 import collectionData from "../data/collection.json";
 import { itemInfo } from "../data/items";
-import { emptyNote, h } from "../dom";
+import { emptyNote, h, wikiLink } from "../dom";
 import { percent } from "../format";
 import type { Lifetime, Run } from "../model/schema";
 import { runsLink } from "../router";
@@ -59,17 +59,18 @@ function sorted(list: Entry[]): Entry[] {
 function tile(e: Entry): HTMLElement {
   const info = itemInfo(e.id, e.name);
   const g = e.group;
-  return h("a", {
+  return h("div", {
     class: `collect${e.have === false ? " missing" : ""}`,
-    href: g ? runsLink({ item: e.name }) : undefined,
     title: `${e.name} (#${e.id})${e.pools?.length ? `\nPools: ${e.pools.join(", ")}` : ""}`,
   },
-  info.icon ? h("img", { class: "collect-icon", src: info.icon, alt: "", loading: "lazy", width: 64, height: 64 }) : h("span", { class: "collect-icon" }),
-  h("div", { class: "collect-name" }, e.name),
-  h("div", { class: "collect-meta" },
-    e.quality !== undefined ? h("span", { class: `quality q${e.quality}` }, `Q${e.quality}`) : null,
-    g ? ` ${g.runs} run${g.runs === 1 ? "" : "s"}${g.decided ? ` · ${percent(g.winRate)} won` : ""}` : null),
-  e.have === false ? h("div", { class: "collect-missing" }, "not collected") : null);
+  h("a", { class: "collect-main", href: g ? runsLink({ item: e.name }) : undefined },
+    info.icon ? h("img", { class: "collect-icon", src: info.icon, alt: "", loading: "lazy", width: 64, height: 64 }) : h("span", { class: "collect-icon" }),
+    h("div", { class: "collect-name" }, e.name),
+    h("div", { class: "collect-meta" },
+      e.quality !== undefined ? h("span", { class: `quality q${e.quality}` }, `Q${e.quality}`) : null,
+      g ? ` ${g.runs} run${g.runs === 1 ? "" : "s"}${g.decided ? ` · ${percent(g.winRate)} won` : ""}` : null),
+    e.have === false ? h("div", { class: "collect-missing" }, "not collected") : null),
+  wikiLink(e.name));
 }
 
 export function renderItems(lifetimes: Lifetime[], slot: string | undefined, runs: Run[], countQuits: boolean): HTMLElement {

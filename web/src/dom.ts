@@ -100,3 +100,12 @@ export function countUp(el: HTMLElement, to: number, fmt: (n: number) => string 
   el.textContent = fmt(0);
   requestAnimationFrame(step);
 }
+
+/** Link to a thing's page on the Isaac wiki (bindingofisaacrebirth.wiki.gg), opens in a new tab. */
+export function wikiLink(name: string): HTMLElement {
+  const page = name.trim().replace(/ /g, "_");
+  return h("a", {
+    class: "wiki-link", href: `https://bindingofisaacrebirth.wiki.gg/wiki/${encodeURIComponent(page)}`,
+    target: "_blank", rel: "noopener", title: `${name} on the Isaac wiki`,
+  }, "wiki ↗");
+}

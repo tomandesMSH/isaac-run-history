@@ -3,7 +3,7 @@
 // data/bestiary.json); the counts come from the lifetime export, which only lists what you've met.
 
 import bestiaryData from "../data/bestiary.json";
-import { card, emptyNote, h } from "../dom";
+import { card, emptyNote, h, wikiLink } from "../dom";
 import type { Lifetime } from "../model/schema";
 
 interface Known {
@@ -88,7 +88,8 @@ function beast(e: Entry): HTMLElement {
         h("span", { title: "times you killed it" }, `${n(e.kills)} killed`),
         e.deaths ? h("span", { class: "beast-deaths", title: "times it killed you" }, `killed you ${n(e.deaths)}×`) : null,
         h("span", { title: "times you met it" }, `met ${n(e.encounters)}×`))
-      : h("div", { class: "beast-counts" }, "not met yet"));
+      : h("div", { class: "beast-counts" }, "not met yet"),
+    wikiLink(e.name));
 }
 
 export function renderBestiary(lifetimes: Lifetime[], slot: string | undefined): HTMLElement {

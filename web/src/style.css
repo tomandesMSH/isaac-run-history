@@ -230,7 +230,9 @@ label.check { cursor: pointer; }
 /* ---------- KPIs ---------- */
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1.2rem; }
-.kpis-many { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 0.8rem; }
+/* seven tiles: two rows of four and three, so long numbers and labels fit */
+.kpis-many { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) { .kpis-many { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .kpi { padding: 1rem 0.9rem 0.9rem; text-align: center; }
 .kpi:nth-child(odd) { transform: rotate(-1deg); }
 .kpi:nth-child(even) { transform: rotate(1deg); }
@@ -559,8 +561,13 @@ i.heat-3 { background: var(--heat-3); } i.heat-4 { background: var(--heat-4); }
 
 .collect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0.9rem 0.6rem; }
 .collect { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; color: var(--ink); text-decoration: none; }
-a.collect[href]:hover .collect-name { text-decoration: underline; }
+a.collect-main[href]:hover .collect-name { text-decoration: underline; }
 .collect-icon { width: 64px; height: 64px; image-rendering: pixelated; }
+.collect-main { display: flex; flex-direction: column; align-items: center; min-width: 0; color: inherit; text-decoration: none; }
+.wiki-link { font-size: 0.85rem; margin-top: 0.2rem; }
+body.has-gfx .wiki-link { font-size: var(--tm); }
+.card .collect-grid a.wiki-link, .card .beast-grid a.wiki-link { color: var(--ink-muted); }  /* beats .card a:not(.item):not(.btn) */
+.card .collect-grid a.wiki-link:hover, .card .beast-grid a.wiki-link:hover { color: var(--title-red); }
 .collect-name { font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
 .collect-meta, .collect-missing { color: var(--ink-muted); font-size: 0.8rem; line-height: 1.2; }
 .collect.missing .collect-icon { opacity: 0.25; filter: grayscale(1); }
@@ -574,11 +581,11 @@ a.collect[href]:hover .collect-name { text-decoration: underline; }
 .chal.done { box-shadow: inset 4px 0 0 #4b8f2a; }
 .chal.todo { box-shadow: inset 4px 0 0 var(--title-red); }
 .chal-head { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-.chal-head h3 { margin: 0; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.chal-head h3 { margin: 0; flex: 1 1 auto; overflow-wrap: break-word; }  /* the chip wraps below a long name rather than splitting a word */
 .chal-num, .chal-meta, .chal-rule-label { color: var(--ink-muted); }
 .chal-rule, .chal-unlocks { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
 .chal-unlock { display: inline-flex; align-items: center; gap: 0.3rem; }
-.chal-unlock img { width: 66px; height: auto; image-rendering: pixelated; }
+.chal-unlock img { height: 40px; width: auto; max-width: 96px; object-fit: contain; image-rendering: pixelated; }
 .chip-done { background: #4b8f2a; color: #fff; padding: 0.05rem 0.35rem; }
 .chip-todo { background: var(--title-red); color: #fff; padding: 0.05rem 0.35rem; }
 
@@ -594,7 +601,7 @@ a.boss[href]:hover .boss-nameimg, a.boss[href]:hover .collect-name { filter: dro
 .boss.missing .boss-portrait img, .boss.missing .boss-nameimg { opacity: 0.25; filter: grayscale(1); }
 .card .boss-grid a.boss { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
 
-.card .collect-grid a.collect, .card .marks-notes a.marks-card { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
+.card .collect-grid a.collect-main, .card .marks-notes a.marks-card { color: var(--ink); }  /* beats .card a:not(.item):not(.btn) */
 
 /* ---------- achievements ---------- */
 

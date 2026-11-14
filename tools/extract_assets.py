@@ -738,11 +738,62 @@ def write_bosses_web(res: Path) -> int:
 CHALLENGES_JSON = Path(__file__).resolve().parent.parent / "web" / "src" / "data" / "challenges.json"
 
 
+# Afterbirth+ challenges' rewards aren't noted in achievements.xml; these are from the wiki
+# (bindingofisaacrebirth.wiki.gg/wiki/Challenges), and they're the achievements right after them.
+CHALLENGE_UNLOCKS = {31: [331], 32: [332], 33: [333], 34: [334], 35: [335]}
+
+
+def achievement_art(img: Image.Image) -> Image.Image | None:
+    """The drawing on a "has appeared in the basement" paper, without the handwriting above and
+    below it: the tallest block of drawn rows (rows with a stray pixel or two count as empty)."""
+    img = img.convert("RGBA")
+    w, h = img.size
+    px = img.load()
+    ink = [[px[x, y][3] > 60 and sum(px[x, y][:3]) < 600 for x in range(w)] for y in range(h)]
+    rows = [sum(r) > 2 for r in ink]
+    blocks, start = [], None
+    for y, on in enumerate(rows + [False]):
+        if on and start is None:
+            start = y
+        elif not on and start is not None:
+            blocks.append((start, y))
+            start = None
+    if not blocks:
+        return None
+    y0, y1 = max(blocks, key=lambda b: b[1] - b[0])
+    cols = [x for x in range(w) if any(ink[y][x] for y in range(y0, y1))]
+    return img.crop((max(0, cols[0] - 2), max(0, y0 - 2), min(w, cols[-1] + 3), min(h, y1 + 2)))
+
+
+def _plain(name: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+def unlock_entry(a: dict, named: dict[str, dict[int, str]], res: Path) -> dict:
+    """One reward: its name and a picture, the game's item or trinket icon when the reward is one,
+    else the drawing cut out of the achievement's paper (gfx/achievements/<id>-art.png)."""
+    e = {"id": a["id"], "name": a["name"].strip(' "!')}
+    key = _plain(a["name"])
+    for kind in ("items", "trinkets"):
+        for i, n in named[kind].items():
+            if _plain(n) == key and (OUT / kind / f"{i}.png").exists():
+                e["icon"] = f"gfx/{kind}/{i}.png"
+                return e
+    src = OUT / "achievements" / f"{a['id']}.png"
+    if src.exists():
+        art = achievement_art(Image.open(src))
+        if art:
+            art.save(OUT / "achievements" / f"{a['id']}-art.png", optimize=True)
+            e["icon"] = f"gfx/achievements/{a['id']}-art.png"
+    return e
+
+
 def write_challenges_web(res: Path) -> int:
     xml = (res / "challenges.xml").read_text(encoding="utf-8", errors="replace")
-    unlocks: dict[int, list[int]] = {}
-    for a in json.loads(ACHIEVEMENTS_JSON.read_text(encoding="utf-8")):
-        m = re.search(r"\bbeat challenge #?(\d+)\b", a.get("how", ""), re.I)
+    achievements = {a["id"]: a for a in json.loads(ACHIEVEMENTS_JSON.read_text(encoding="utf-8"))}
+    unlocks: dict[int, list[int]] = {k: list(v) for k, v in CHALLENGE_UNLOCKS.items()}
+    for a in achievements.values():
+        m = re.search(r"\b(?:beat|complete) challenge #?(\d+)\b", a.get("how", ""), re.I)
         if m:
             unlocks.setdefault(int(m.group(1)), []).append(a["id"])
     ints = lambda v: [int(x) for x in re.split(r"[ ,]+", v.strip()) if x.lstrip("-").isdigit()]
@@ -775,7 +826,7 @@ def write_challenges_web(res: Path) -> int:
         if a.get("canshoot") == "false":
             e["noShooting"] = True
         if i in unlocks:
-            e["unlocks"] = unlocks[i]
+            e["unlocks"] = [unlock_entry(achievements[u], named, res) for u in unlocks[i] if u in achievements]
         entries.append(e)
     entries.sort(key=lambda e: e["id"])
     CHALLENGES_JSON.write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")

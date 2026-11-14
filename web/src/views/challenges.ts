@@ -2,7 +2,6 @@
 // whether the save has finished it (lifetime export from mod 1.3+), the recorded attempts and what
 // beating it unlocks.
 
-import achievementData from "../data/achievements.json";
 import challengeData from "../data/challenges.json";
 import { CHALLENGES, CHARACTERS, ROOM_TYPES, curseNames } from "../data/game";
 import { itemInfo, trinketInfo } from "../data/items";
@@ -15,14 +14,13 @@ interface Named { id: number; name: string }
 interface Known {
   id: number; name: string; player: number; endStage: number;
   items?: Named[]; trinkets?: Named[]; noRooms?: number[]; curses?: number; noCurses?: number;
-  altPath?: boolean; secretPath?: boolean; noShooting?: boolean; unlocks?: number[];
+  altPath?: boolean; secretPath?: boolean; noShooting?: boolean; unlocks?: { id: number; name: string; icon?: string }[];
 }
 
 type Show = "all" | "done" | "todo";
 const SHOWS: [Show, string][] = [["all", "All"], ["done", "Finished"], ["todo", "Not finished"]];
 const view: { show: Show; query: string } = { show: "all", query: "" };
 
-const ACHIEVEMENTS = new Map((achievementData as { id: number; name: string; img?: boolean }[]).map((a) => [a.id, a]));
 
 /** What beating it means: the boss at its last floor. */
 function goal(c: Known): string {
@@ -78,12 +76,9 @@ function card(c: Known, done: boolean | undefined, runs: Run[]): HTMLElement {
       : null,
     c.unlocks?.length
       ? h("div", { class: "chal-unlocks" }, h("span", { class: "chal-rule-label" }, "Unlocks "),
-        c.unlocks.map((id) => {
-          const a = ACHIEVEMENTS.get(id);
-          return h("span", { class: "chal-unlock", title: a?.name ?? `#${id}` },
-            gfx && a?.img ? h("img", { src: `gfx/achievements/${id}.png`, alt: "", loading: "lazy", width: 66, height: 44 }) : null,
-            h("span", null, a?.name ?? `Achievement #${id}`));
-        }))
+        c.unlocks.map((u) => h("span", { class: "chal-unlock", title: `Achievement #${u.id}` },
+          gfx && u.icon ? h("img", { src: u.icon, alt: "", loading: "lazy" }) : null,
+          h("span", null, u.name))))
       : null);
 }
 
