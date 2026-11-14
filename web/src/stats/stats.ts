@@ -3,7 +3,7 @@
 // Win rate = wins / decided runs. A run is decided when it was won or lost (died); quits and runs
 // cut short by a crash don't count unless countQuits is on, then they count as losses.
 
-import { BOSSES, endingName, floorName, floorOrder } from "../data/game";
+import { BOSSES, curseNames, endingName, floorName, floorOrder } from "../data/game";
 
 const BOSS_IDS = Object.keys(BOSSES).map(Number);
 import { itemInfo, trinketInfo, type ItemInfo } from "../data/items";
@@ -207,6 +207,74 @@ export function bossGroups(runs: Run[], countQuits: boolean): BossGroup[] {
   const list = finish(groups.values());
   for (const g of list) g.floors.sort((a, b) => b.count - a.count || (a.order ?? 0) - (b.order ?? 0));
   return list;
+}
+
+/** Runs split by route: Repentance's alt path (Downpour, Mines, Mausoleum, Corpse...) or the usual floors. Greed runs left out. */
+export function pathStats(runs: Run[], countQuits: boolean): WinGroup[] {
+  const alt = winGroup("alt", "Alt path");
+  const normal = winGroup("normal", "Normal path");
+  for (const r of runs) {
+    if (isGreed(r)) continue;
+    addRun(r.floors.some((f) => f.stageType === 4 || f.stageType === 5) ? alt : normal, r, countQuits);
+  }
+  return finish([normal, alt]).filter((g) => g.runs > 0);
+}
+
+export interface CurseGroup extends WinGroup {
+  /** floors it was on */
+  floors: number;
+  /** deaths on a floor with it */
+  deaths: number;
+}
+
+/** Per curse: on how many floors and runs it was, how those runs went and how many deaths happened under it. */
+export function curseStats(runs: Run[], countQuits: boolean): CurseGroup[] {
+  const groups = new Map<string, CurseGroup>();
+  for (const r of runs) {
+    const seen = new Set<string>();
+    r.floors.forEach((f, i) => {
+      for (const name of curseNames(f.curses)) {
+        let g = groups.get(name);
+        if (!g) groups.set(name, (g = { ...winGroup(name, name), floors: 0, deaths: 0 }));
+        g.floors++;
+        if (r.result.type === "death" && i === r.floors.length - 1) g.deaths++;
+        if (!seen.has(name)) addRun(g, r, countQuits);
+        seen.add(name);
+      }
+    });
+  }
+  return finish(groups.values()).sort((a, b) => b.floors - a.floors || a.label.localeCompare(b.label));
+}
+
+export interface PairGroup extends WinGroup {
+  a: ItemInfo;
+  b: ItemInfo;
+}
+
+/** Two items picked up in the same run (starting and later-lost items left out), with at least minRuns decided runs. */
+export function itemPairs(runs: Run[], countQuits: boolean, minRuns: number, limit = 15): PairGroup[] {
+  const groups = new Map<string, PairGroup>();
+  for (const r of runs) {
+    const items = new Map<string, ItemInfo>();
+    for (const p of r.items) {
+      if (p.starting || p.removed) continue;
+      const info = itemInfo(p.id, p.name);
+      items.set(info.key, info);
+    }
+    const list = [...items.values()].sort((x, y) => x.key.localeCompare(y.key));
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const key = `${list[i].key}|${list[j].key}`;
+        let g = groups.get(key);
+        if (!g) groups.set(key, (g = { ...winGroup(key, `${list[i].name} + ${list[j].name}`), a: list[i], b: list[j] }));
+        addRun(g, r, countQuits);
+      }
+    }
+  }
+  return finish(groups.values())
+    .filter((g) => g.decided >= minRuns && g.wins > 0)
+    .sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || a.label.localeCompare(b.label))
+    .slice(0, limit);
 }
 
 function countBy(runs: Run[], pick: (r: Run) => { key: string; label: string; order?: number } | null): CountGroup[] {

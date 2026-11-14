@@ -13,8 +13,10 @@ function matches(run: Run, f: RunFilters): boolean {
   if (f.result && run.result.type !== f.result) return false;
   if (f.difficulty && run.difficulty !== f.difficulty) return false;
   if (f.boss && !run.floors.some((fl) => (fl.bosses ?? []).some((b) => String(b.bossId) === f.boss))) return false;
-  if (f.item) {
-    const needle = f.item.toLowerCase();
+  // "Brimstone + Tammy's Head": every part has to be in the run
+  for (const part of (f.item ?? "").split(" + ")) {
+    const needle = part.trim().toLowerCase();
+    if (!needle) continue;
     const has = run.items.some((i) => itemInfo(i.id, i.name).name.toLowerCase().includes(needle))
       || run.trinkets.some((t) => trinketInfo(t.id, t.name).name.toLowerCase().includes(needle));
     if (!has) return false;

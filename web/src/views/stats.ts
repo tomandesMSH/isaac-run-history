@@ -6,8 +6,8 @@ import { characterName, dateTime, duration, percent } from "../format";
 import type { Run } from "../model/schema";
 import { runsLink } from "../router";
 import {
-  applyFilters, bestItems, bossGroups, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
-  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup,
+  applyFilters, bestItems, bossGroups, curseStats, itemPairs, pathStats, deathCauses, deathFloors, endings, itemGroups, mostPickedItems, records, summary, trinketGroups,
+  winRateByCharacter, type CountGroup, type ItemGroup, type RunRecord, type StatsOptions, type TrinketGroup, type WinGroup, type CurseGroup, type PairGroup,
 } from "../stats/stats";
 
 export const defaultStatsOptions: StatsOptions = { difficulty: "all", countQuits: false, minRuns: 5 };
@@ -76,6 +76,50 @@ export function recordTiles(list: RunRecord[]): HTMLElement {
         `${characterName(r.run)}${r.kind === "streak" ? ", last win" : ""} →`)))));
 }
 
+function winTable(groups: WinGroup[], what: string, empty: string): HTMLElement {
+  if (groups.length === 0) return emptyNote(empty);
+  return h("table", { class: "table" },
+    h("thead", null, h("tr", null,
+      h("th", { scope: "col" }, what),
+      h("th", { scope: "col", class: "num" }, "Runs"),
+      h("th", { scope: "col", class: "num" }, "Won"),
+      h("th", { scope: "col" }, "Win rate"))),
+    h("tbody", null, groups.map((g) => h("tr", null,
+      h("th", { scope: "row" }, g.label),
+      h("td", { class: "num" }, g.runs),
+      h("td", { class: "num" }, `${g.wins}/${g.decided}`),
+      h("td", { class: "bar-cell" }, bar(g.winRate, g.decided ? percent(g.winRate) : "–", "win"))))));
+}
+
+function curseTable(groups: CurseGroup[]): HTMLElement {
+  if (groups.length === 0) return emptyNote("No cursed floors yet.");
+  return h("table", { class: "table" },
+    h("thead", null, h("tr", null,
+      h("th", { scope: "col" }, "Curse"),
+      h("th", { scope: "col", class: "num" }, "Floors"),
+      h("th", { scope: "col", class: "num" }, "Deaths"),
+      h("th", { scope: "col" }, "Win rate"))),
+    h("tbody", null, groups.map((g) => h("tr", null,
+      h("th", { scope: "row", title: g.label }, g.label.replace(/^Curse of (the )?/, "")),
+      h("td", { class: "num" }, g.floors),
+      h("td", { class: "num" }, g.deaths),
+      h("td", { class: "bar-cell" }, bar(g.winRate, g.decided ? `${percent(g.winRate)} of ${g.decided}` : "–", "win"))))));
+}
+
+function pairTable(groups: PairGroup[]): HTMLElement {
+  if (groups.length === 0) return emptyNote("No two items have won together often enough yet. More runs, more pairs.");
+  return h("table", { class: "table" },
+    h("thead", null, h("tr", null,
+      h("th", { scope: "col" }, "Items"),
+      h("th", { scope: "col", class: "num" }, "Won"),
+      h("th", { scope: "col" }, "Win rate"))),
+    h("tbody", null, groups.map((g) => h("tr", null,
+      h("th", { scope: "row" }, h("a", { class: "pair", href: runsLink({ item: `${g.a.name} + ${g.b.name}` }) },
+        itemChip(g.a), " + ", itemChip(g.b))),
+      h("td", { class: "num" }, `${g.wins}/${g.decided}`),
+      h("td", { class: "bar-cell" }, bar(g.winRate, percent(g.winRate), "win"))))));
+}
+
 function bossList(groups: ReturnType<typeof bossGroups>): HTMLElement {
   const top = [...groups].sort((a, b) => b.runs - a.runs || a.label.localeCompare(b.label)).slice(0, 8);
   return h("div", null,
@@ -125,6 +169,8 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
   });
   const best = bestItems(items, opts.minRuns);
   const most = mostPickedItems(items);
+  const pairMin = Math.max(2, Math.ceil(opts.minRuns / 2));
+  const pairs = itemPairs(runs, opts.countQuits, pairMin);
   const trinkets = trinketGroups(runs, opts.countQuits);
   const mostTrinkets = mostPickedItems(trinkets, 15);
   const bestTrinkets = bestItems(trinkets, opts.minRuns, 15);
@@ -149,6 +195,11 @@ export function renderStats(allRuns: Run[], opts: StatsOptions, onChange: (o: St
       card("Best trinkets by win rate",
         bestTrinkets.length ? itemTable(bestTrinkets, "winrate", s.winRate, "Trinket") : emptyNote(`No trinket has been in ${opts.minRuns}+ decided runs yet.`),
         { note: `Trinkets held in at least ${opts.minRuns} decided runs (the same minimum as items).` }),
+      card("Paths", winTable(pathStats(runs, opts.countQuits), "Route", "No runs off Greed mode yet."),
+        { note: "Alt path: runs that went to Downpour, Mines, Mausoleum or Corpse at least once. Greed runs left out." }),
+      card("Curses", curseTable(curseStats(runs, opts.countQuits)),
+        { note: "Floors with the curse, deaths on such a floor, and the win rate of runs that had it." }),
+      card("Winning pairs", pairTable(pairs), { note: `Two items held together in at least ${pairMin} decided runs, best win rate first.` }),
       card("Bosses beaten", bossList(bossGroups(runs, opts.countQuits))),
       card("Causes of death", countList(deathCauses(runs).slice(0, 15), "death", "No deaths. Nice.")),
       card("Floor of death", countList(deathFloors(runs), "death", "No deaths. Nice."))));
