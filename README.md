@@ -10,7 +10,7 @@ For Repentance+ with [REPENTOGON](https://repentogon.com).
 
 <p>
   <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3841181539"><img src="docs/badges/steam.png" alt="Download on Steam" height="64"></a>
-  <a href="https://github.com/tomandesMSH/isaac-run-history/tree/main/mod/isaac-run-history"><img src="docs/badges/github.png" alt="Get it on GitHub" height="64"></a>
+  <a href="https://github.com/tomandesMSH/isaac-run-history/releases/latest"><img src="docs/badges/github.png" alt="Get it on GitHub" height="64"></a>
 </p>
 
 The project has two parts:
@@ -62,7 +62,8 @@ totals only, no list of runs, so per-run stats still come from the mod.
 
 1. Install [REPENTOGON](https://repentogon.com).
 2. Subscribe on the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3841181539),
-   or copy the `mod/isaac-run-history` folder to `...\The Binding of Isaac Rebirth\mods\`.
+   or download the zip from [Releases](https://github.com/tomandesMSH/isaac-run-history/releases/latest)
+   and unpack it into `...\The Binding of Isaac Rebirth\mods\` (you get `mods\isaac-run-history\`).
 
 ## Using it
 
