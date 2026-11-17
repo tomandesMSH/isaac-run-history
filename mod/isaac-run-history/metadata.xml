@@ -2,6 +2,7 @@
 <metadata>
     <name>Isaac Run History</name>
     <directory>isaac-run-history</directory>
+    <id>3841181539</id>
     <description>[h1]Isaac Run History[/h1]
 
 Records every run you play - wins, deaths and restarts - with the items you picked up floor by floor, bosses, the cause of death, final stats and the seed. Drop the history file on [url=https://tomandes.eu/isaac-run-history/]tomandes.eu/isaac-run-history[/url] and get statistics: win rate per character, the items that win you runs, what keeps killing you, bosses, completion marks and more.
@@ -19,11 +20,13 @@ Open the console and click [b]Run History[/b] in the menu bar, or use:
 [h2]Requirements[/h2]
 [list]
 [*][b]Repentance+[/b] required
-[*][url=https://repentogon.com]REPENTOGON[/url] required
+[*][url=https://repentogon.com][img]https://raw.githubusercontent.com/tomandesMSH/ShareSeed/main/repentogon.gif[/img][/url] required
 [*]Works together with ShareSeed (its share code is stored with each run)
-[/list]</description>
-    <version>1.4.4</version>
-    <visibility>Private</visibility>
+[/list]
+
+More info on GitHub: [url=https://github.com/tomandesMSH/isaac-run-history]GitHub[/url]</description>
+    <version>1.4.6</version>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
 </metadata>
